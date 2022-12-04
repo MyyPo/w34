@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package auth.v1;
+
+option go_package = "github.com/MyyPo/w34.Go/gen/go/auth/v1;authpb";
+
+message AuthRequest {
+    string username = 1;
+    string password = 2;    
+}
+
+message TokenPackage {
+    string access_token = 1;
+    string refresh_token = 2;
+}
+

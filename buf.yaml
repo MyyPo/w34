@@ -1,0 +1,8 @@
+version: v1
+name: github.com/MyyPo/w34.Go
+breaking:
+  use:
+    - FILE
+lint:
+  use:
+    - DEFAULT

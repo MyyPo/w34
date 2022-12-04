@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package auth.v1;
+
+option go_package = "github.com/MyyPo/w34.Go/gen/go/auth/v1;authpb";
+
+import "auth/v1/auth.proto";
+
+service AuthService {
+    rpc SignUp (SignUpRequest) returns (SignUpResponse);
+    rpc SignIn (SignInRequest) returns (SignInResponse);
+    rpc RefreshTokens (RefreshTokensRequest) returns (RefreshTokensResponse);
+}
+
+message SignUpRequest {
+    AuthRequest credentials = 1;
+}
+
+message SignUpResponse {
+    TokenPackage tokens = 1;
+}
+
+message SignInRequest {
+    AuthRequest credentials = 1;
+}
+
+message SignInResponse {
+    TokenPackage tokens = 1;
+}
+
+message RefreshTokensRequest {
+    TokenPackage tokens = 1;    
+}
+
+message RefreshTokensResponse {
+    TokenPackage tokens = 1;
+}
