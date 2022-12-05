@@ -22,15 +22,6 @@ const (
 	dbname   = "postgres"
 )
 
-func removeRows(db *sql.DB) {
-	stmt := t.Accounts.
-		DELETE().
-		WHERE(
-			t.Accounts.Username.NOT_EQ(String("")),
-		)
-	stmt.Exec(db)
-}
-
 func TestSignUp(t *testing.T) {
 	db, err := sql.Open("postgres",
 		fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
@@ -39,7 +30,8 @@ func TestSignUp(t *testing.T) {
 		t.Errorf("failed to connect to db for testing: %q", err)
 	}
 	t.Cleanup(func() { removeRows(db) })
-	t.Run("Saying heeey", func(t *testing.T) {
+
+	t.Run("Stub sign up test", func(t *testing.T) {
 		rep := psql_adapters.NewPSQLRepository(db)
 		impl := NewAuthServer(rep)
 
@@ -62,4 +54,13 @@ func TestSignUp(t *testing.T) {
 		}
 	})
 
+}
+
+func removeRows(db *sql.DB) {
+	stmt := t.Accounts.
+		DELETE().
+		WHERE(
+			t.Accounts.Username.NOT_EQ(String("")),
+		)
+	stmt.Exec(db)
 }

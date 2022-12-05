@@ -7,3 +7,13 @@ tasks:
   test:
     cmds:
       - go test ./internal/...
+  testv:
+    cmds:
+      - go test ./internal/... -v
+
+  tauth:
+    cmds:
+      - go test ./internal/pkg/auth -v
+  tvalidators:
+    cmds:
+      - go test ./internal/pkg/validators -v
