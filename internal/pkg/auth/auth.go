@@ -23,7 +23,7 @@ func NewAuthServer(repo Repository, validator validators.AuthValidator) *AuthSer
 }
 
 func (s AuthServer) SignUp(ctx context.Context, req *authv1.SignUpRequest) (model.Accounts, error) {
-	err := s.validator.ValidateEmail(req.GetEmail())
+	err := s.validator.ValidateCredentials(req)
 	if err != nil {
 		return model.Accounts{}, err
 	}

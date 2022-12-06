@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"testing"
 
 	authv1 "github.com/MyyPo/w34.Go/gen/go/auth/v1"
@@ -24,19 +25,9 @@ const (
 )
 
 func TestSignUp(t *testing.T) {
-	db, err := sql.Open("postgres",
-		fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-			host, port, user, password, dbname))
-	if err != nil {
-		t.Errorf("failed to connect to db for testing: %q", err)
-	}
-	t.Cleanup(func() { removeRows(db) })
+	psqlImpl := setupPsql(t)
 
-	t.Run("Stub sign up test", func(t *testing.T) {
-		rep := psql_adapters.NewPSQLRepository(db)
-		validator, _ := validators.NewAuthValidator(60, "^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$")
-
-		impl := NewAuthServer(rep, *validator)
+	t.Run("Successful signup", func(t *testing.T) {
 
 		req := &authv1.SignUpRequest{
 			Username: "stubhello",
@@ -44,7 +35,7 @@ func TestSignUp(t *testing.T) {
 			Password: "stubhello",
 		}
 
-		got, err := impl.SignUp(context.Background(), req)
+		got, err := psqlImpl.SignUp(context.Background(), req)
 		if err != nil {
 			t.Errorf("unexpected error while trying to sign up: %q", err)
 		}
@@ -56,7 +47,18 @@ func TestSignUp(t *testing.T) {
 			t.Errorf("got %v want %v", got, want)
 		}
 	})
+	t.Run("Try to signup with the taken username", func(t *testing.T) {
+		req := &authv1.SignUpRequest{
+			Username: "stubhello",
+			Email:    "validemail@stub.com",
+			Password: "stubhello",
+		}
 
+		_, err := psqlImpl.SignUp(context.Background(), req)
+		if err == nil {
+			t.Errorf("succesfully signed up with the taken username")
+		}
+	})
 }
 
 func removeRows(db *sql.DB) {
@@ -66,4 +68,21 @@ func removeRows(db *sql.DB) {
 			t.Accounts.Username.NOT_EQ(String("")),
 		)
 	stmt.Exec(db)
+}
+
+func setupPsql(t *testing.T) *AuthServer {
+	psqlDB, err := sql.Open("postgres",
+		fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+			host, port, user, password, dbname))
+	if err != nil {
+		log.Fatalf("failed to connect to db for testing: %q", err)
+	}
+	psqlRepo := psql_adapters.NewPSQLRepository(psqlDB)
+	authValidator, err := validators.NewAuthValidator(60, "^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$")
+	if err != nil {
+		log.Fatalf("failed to initialize validator for testing: %q", err)
+	}
+	// remove all affected database rows after the tests
+	t.Cleanup(func() { removeRows(psqlDB) })
+	return NewAuthServer(psqlRepo, *authValidator)
 }
