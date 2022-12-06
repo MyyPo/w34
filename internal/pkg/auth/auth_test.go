@@ -10,6 +10,7 @@ import (
 	"github.com/MyyPo/w34.Go/gen/psql/auth/public/model"
 	t "github.com/MyyPo/w34.Go/gen/psql/auth/public/table"
 	"github.com/MyyPo/w34.Go/internal/adapters/psql"
+	"github.com/MyyPo/w34.Go/internal/pkg/validators"
 	. "github.com/go-jet/jet/v2/postgres"
 	_ "github.com/lib/pq"
 )
@@ -33,17 +34,19 @@ func TestSignUp(t *testing.T) {
 
 	t.Run("Stub sign up test", func(t *testing.T) {
 		rep := psql_adapters.NewPSQLRepository(db)
-		impl := NewAuthServer(rep)
+		validator, _ := validators.NewAuthValidator(60, "^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$")
+
+		impl := NewAuthServer(rep, *validator)
 
 		req := &authv1.SignUpRequest{
 			Username: "stubhello",
-			Email:    "stubhello",
+			Email:    "stubhello@stub.com",
 			Password: "stubhello",
 		}
 
 		got, err := impl.SignUp(context.Background(), req)
 		if err != nil {
-			t.Errorf("unexpected error: %q", err)
+			t.Errorf("unexpected error while trying to sign up: %q", err)
 		}
 		want := model.Accounts{
 			Username: "stubhello",
