@@ -24,7 +24,10 @@ func NewJWTManager(
 }
 
 func (m JWTManager) GenerateJWT(userUUID string) (string, error) {
-	rsaPrivateSignature, _ := LoadRSAPrivateKeyFromDisk("../../../secrets/rsa")
+	rsaPrivateSignature, err := LoadRSAPrivateKeyFromDisk("../../../configs/rsa")
+	if err != nil {
+		return "", err
+	}
 
 	now := time.Now().UTC()
 
@@ -48,9 +51,21 @@ func LoadRSAPrivateKeyFromDisk(location string) (*rsa.PrivateKey, error) {
 	if err != nil {
 		return nil, err
 	}
-	key, err := jwt.ParseRSAPrivateKeyFromPEM(keyData)
+	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(keyData)
 	if err != nil {
 		return nil, err
 	}
-	return key, nil
+	return privateKey, nil
+}
+
+func LoadRSAPublicKeyFromDisk(location string) (*rsa.PublicKey, error) {
+	keyData, err := os.ReadFile(location)
+	if err != nil {
+		return nil, err
+	}
+	publicKey, err := jwt.ParseRSAPublicKeyFromPEM(keyData)
+	if err != nil {
+		return nil, err
+	}
+	return publicKey, nil
 }

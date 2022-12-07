@@ -6,7 +6,7 @@ RUN mkdir /app
 WORKDIR /app
 
 COPY . .
-COPY config.env .
+COPY configs/config.env .
 
 RUN go get -d -v ./...
 

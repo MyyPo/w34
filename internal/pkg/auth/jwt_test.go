@@ -18,7 +18,6 @@ func TestJWT(t *testing.T) {
 		if err != nil {
 			t.Errorf("jwt error: %q", err)
 		}
-
 		testClaims, err := parseTestToken(t, got)
 		if err != nil {
 			t.Errorf("failed to parse the test token: %q", err)
@@ -28,11 +27,17 @@ func TestJWT(t *testing.T) {
 		if sub.(string) != userUUID {
 			t.Errorf("issued sub: %s, want id: %s", sub.(string), userUUID)
 		}
+
 	})
 }
 
 func parseTestToken(t *testing.T, tokenString string) (jwt.MapClaims, error) {
 	t.Helper()
+	rsaPublicSignature, err := LoadRSAPublicKeyFromDisk("../../../configs/rsa.pub")
+	if err != nil {
+		return nil, fmt.Errorf("failed to load the signature: %q", err)
+	}
+
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// check the algorithm
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
@@ -41,8 +46,12 @@ func parseTestToken(t *testing.T, tokenString string) (jwt.MapClaims, error) {
 
 		// on success return our secret to satisfy the parse function
 		// if the signature on token != our returned signature, returns error
-		return []byte("testSignature"), nil
+		return rsaPublicSignature, nil
 	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to verify: %q", err)
+	}
+
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
 		return nil, fmt.Errorf("claims error: %v", err)
