@@ -10,21 +10,26 @@ import (
 )
 
 type JWTManager struct {
-	accessTokenDuraion   time.Duration
-	refreshTokenDuration time.Duration
+	pathToPrivateSignature string
+	pathToPublicSignature  string
+	accessTokenDuraion     time.Duration
+	refreshTokenDuration   time.Duration
 }
 
 func NewJWTManager(
+	pathToPrivateSignature, pathToPublicSignature string,
 	accessTokenDuration, refreshTokenDuration time.Duration,
 ) *JWTManager {
 	return &JWTManager{
-		accessTokenDuraion:   accessTokenDuration,
-		refreshTokenDuration: refreshTokenDuration,
+		pathToPrivateSignature: pathToPrivateSignature,
+		pathToPublicSignature:  pathToPublicSignature,
+		accessTokenDuraion:     accessTokenDuration,
+		refreshTokenDuration:   refreshTokenDuration,
 	}
 }
 
 func (m JWTManager) GenerateJWT(userUUID string) (string, error) {
-	rsaPrivateSignature, err := LoadRSAPrivateKeyFromDisk("../../../configs/rsa")
+	rsaPrivateSignature, err := LoadRSAPrivateKeyFromDisk(m.pathToPrivateSignature)
 	if err != nil {
 		return "", err
 	}
@@ -44,6 +49,32 @@ func (m JWTManager) GenerateJWT(userUUID string) (string, error) {
 	}
 
 	return token, nil
+}
+
+func (m JWTManager) ValidateJwtExtractClaims(jwtTokenString string) (jwt.MapClaims, error) {
+	rsaPublicSignature, err := LoadRSAPublicKeyFromDisk("../../../configs/rsa.pub")
+	if err != nil {
+		return nil, fmt.Errorf("failed to load the signature: %q", err)
+	}
+
+	jwtToken, err := jwt.Parse(jwtTokenString, func(token *jwt.Token) (interface{}, error) {
+		// check if the signing algorithm is correct
+		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		// check the signature of the token
+		return rsaPublicSignature, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to verify: %q", err)
+	}
+
+	claims, ok := jwtToken.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, fmt.Errorf("claims error: %q", err)
+	}
+
+	return claims, nil
 }
 
 func LoadRSAPrivateKeyFromDisk(location string) (*rsa.PrivateKey, error) {

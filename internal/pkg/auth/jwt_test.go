@@ -9,16 +9,16 @@ import (
 )
 
 func TestJWT(t *testing.T) {
-	jwtManager := NewJWTManager(time.Minute*10, time.Hour*48)
+	jwtManager := NewJWTManager("../../../configs/rsa", "../../../configs/rsa.pub", time.Minute*10, time.Hour*48)
 
-	t.Run("Create an access token", func(t *testing.T) {
+	t.Run("Create an access token, then validate it", func(t *testing.T) {
 		userUUID := "16e33d5a-bd6c-4a03-8416-73e89dff2a8a"
 
-		got, err := jwtManager.GenerateJWT(userUUID)
+		gotJWT, err := jwtManager.GenerateJWT(userUUID)
 		if err != nil {
 			t.Errorf("jwt error: %q", err)
 		}
-		testClaims, err := parseTestToken(t, got)
+		testClaims, err := parseTestToken(t, gotJWT)
 		if err != nil {
 			t.Errorf("failed to parse the test token: %q", err)
 		}
@@ -28,6 +28,24 @@ func TestJWT(t *testing.T) {
 			t.Errorf("issued sub: %s, want id: %s", sub.(string), userUUID)
 		}
 
+		gotClaims, err := jwtManager.ValidateJwtExtractClaims(gotJWT)
+		if err != nil {
+			t.Errorf("failed to validate valid token: %q", err)
+		}
+
+		sub = gotClaims["sub"]
+		if sub.(string) != userUUID {
+			t.Errorf("issued sub: %s, want id: %s", sub.(string), userUUID)
+		}
+	})
+	t.Run("Try to validate a token with invalid signing method", func(t *testing.T) {
+		hs256Token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+
+		_, err := jwtManager.ValidateJwtExtractClaims(hs256Token)
+		t.Logf("err: %q", err)
+		if err == nil {
+			t.Errorf("invalid token validated")
+		}
 	})
 }
 
