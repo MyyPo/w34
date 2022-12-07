@@ -9,4 +9,5 @@ import (
 
 type Repository interface {
 	CreateUser(ctx context.Context, req *authv1.SignUpRequest) (model.Accounts, error)
+	// LookupUser(ctx context.Context, req *authv1.SignInRequest) (model.Accounts, error)
 }

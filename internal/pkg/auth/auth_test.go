@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	authv1 "github.com/MyyPo/w34.Go/gen/go/auth/v1"
-	"github.com/MyyPo/w34.Go/gen/psql/auth/public/model"
 	t "github.com/MyyPo/w34.Go/gen/psql/auth/public/table"
 	"github.com/MyyPo/w34.Go/internal/adapters/psql"
 	"github.com/MyyPo/w34.Go/internal/pkg/validators"
@@ -24,7 +23,7 @@ const (
 	dbname   = "postgres"
 )
 
-func TestSignUp(t *testing.T) {
+func TestSignUpSignIn(t *testing.T) {
 	psqlImpl := setupPsql(t)
 
 	t.Run("Successful signup", func(t *testing.T) {
@@ -35,16 +34,9 @@ func TestSignUp(t *testing.T) {
 			Password: "stubhello",
 		}
 
-		got, err := psqlImpl.SignUp(context.Background(), req)
+		_, err := psqlImpl.SignUp(context.Background(), req)
 		if err != nil {
 			t.Errorf("unexpected error while trying to sign up: %q", err)
-		}
-		want := model.Accounts{
-			Username: "stubhello",
-		}
-
-		if got != want {
-			t.Errorf("got %v want %v", got, want)
 		}
 	})
 	t.Run("Try to signup with the taken username", func(t *testing.T) {
@@ -59,6 +51,13 @@ func TestSignUp(t *testing.T) {
 			t.Errorf("succesfully signed up with the taken username")
 		}
 	})
+	// t.Run("Try to signin with created account", func(t *testing.T) {
+	// 	req := &authv1.SignInRequest{
+	// 		UnOrEmail: "stubhello",
+	// 		Password:  "stubhello",
+	// 	}
+	// 	// got, err := psqlImpl.SignIn
+	// })
 }
 
 func removeRows(db *sql.DB) {

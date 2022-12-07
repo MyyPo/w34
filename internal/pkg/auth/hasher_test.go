@@ -2,11 +2,9 @@ package auth
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
-func Test(t *testing.T) {
+func TestHasher(t *testing.T) {
 	hasher := NewHasher()
 
 	psw := "Sill3pASsworD"
@@ -18,7 +16,9 @@ func Test(t *testing.T) {
 		if err != nil {
 			t.Errorf("error while trying to hash a password: %q", err)
 		}
-		assert.NotEqual(t, psw, got)
+		if psw == got {
+			t.Errorf("password: %s didn't turn into hash", psw)
+		}
 		pswHash = got
 	})
 	t.Run("Compare the password and VALID hash for it", func(t *testing.T) {

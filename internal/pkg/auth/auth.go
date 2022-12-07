@@ -4,7 +4,6 @@ import (
 	"context"
 
 	authv1 "github.com/MyyPo/w34.Go/gen/go/auth/v1"
-	"github.com/MyyPo/w34.Go/gen/psql/auth/public/model"
 	"github.com/MyyPo/w34.Go/internal/pkg/validators"
 )
 
@@ -22,11 +21,18 @@ func NewAuthServer(repo Repository, validator validators.AuthValidator) *AuthSer
 	}
 }
 
-func (s AuthServer) SignUp(ctx context.Context, req *authv1.SignUpRequest) (model.Accounts, error) {
-	err := s.validator.ValidateCredentials(req)
-	if err != nil {
-		return model.Accounts{}, err
+func (s AuthServer) SignUp(ctx context.Context, req *authv1.SignUpRequest) (*authv1.SignUpResponse, error) {
+	if err := s.validator.ValidateCredentials(req); err != nil {
+		return nil, err
+	}
+	if _, err := s.repo.CreateUser(ctx, req); err != nil {
+		return nil, err
 	}
 
-	return s.repo.CreateUser(ctx, req)
+	return &authv1.SignUpResponse{
+		Tokens: &authv1.TokenPackage{
+			AccessToken:  "",
+			RefreshToken: "",
+		},
+	}, nil
 }

@@ -41,6 +41,7 @@ func (v AuthValidator) ValidateUsername(username string) error {
 	if len(username) < 3 {
 		return fmt.Errorf("username must be longer than 2 symbols")
 	}
+	// try to match username with our regex
 	if !v.usernameRgx.MatchString(username) {
 		return fmt.Errorf("username contains invalid characters")
 	}
