@@ -7,6 +7,7 @@ import (
 	"log"
 	"testing"
 
+	"github.com/MyyPo/w34.Go/configs"
 	authv1 "github.com/MyyPo/w34.Go/gen/go/auth/v1"
 	t "github.com/MyyPo/w34.Go/gen/psql/auth/public/table"
 	"github.com/MyyPo/w34.Go/internal/adapters/psql"
@@ -25,6 +26,10 @@ const (
 
 func TestSignUpSignIn(t *testing.T) {
 	psqlImpl := setupPsql(t)
+	_, err := configs.NewConfig("../../../configs")
+	if err != nil {
+		t.Errorf("failed to load config: %q", err)
+	}
 
 	t.Run("Successful signup", func(t *testing.T) {
 

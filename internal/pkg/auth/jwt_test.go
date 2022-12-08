@@ -18,7 +18,7 @@ func TestJWT(t *testing.T) {
 		if err != nil {
 			t.Errorf("jwt error: %q", err)
 		}
-		testClaims, err := parseTestToken(t, gotJWT)
+		testClaims, err := parseTestToken(t, gotJWT, *jwtManager)
 		if err != nil {
 			t.Errorf("failed to parse the test token: %q", err)
 		}
@@ -49,9 +49,9 @@ func TestJWT(t *testing.T) {
 	})
 }
 
-func parseTestToken(t *testing.T, tokenString string) (jwt.MapClaims, error) {
+func parseTestToken(t *testing.T, tokenString string, jwtManager JWTManager) (jwt.MapClaims, error) {
 	t.Helper()
-	rsaPublicSignature, err := LoadRSAPublicKeyFromDisk("../../../configs/rsa.pub")
+	rsaPublicSignature, err := jwtManager.LoadRSAPublicKeyFromDisk("../../../configs/rsa.pub")
 	if err != nil {
 		return nil, fmt.Errorf("failed to load the signature: %q", err)
 	}

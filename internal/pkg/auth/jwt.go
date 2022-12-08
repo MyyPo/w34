@@ -29,7 +29,7 @@ func NewJWTManager(
 }
 
 func (m JWTManager) GenerateJWT(userUUID string) (string, error) {
-	rsaPrivateSignature, err := LoadRSAPrivateKeyFromDisk(m.pathToPrivateSignature)
+	rsaPrivateSignature, err := m.LoadRSAPrivateKeyFromDisk(m.pathToPrivateSignature)
 	if err != nil {
 		return "", err
 	}
@@ -52,7 +52,7 @@ func (m JWTManager) GenerateJWT(userUUID string) (string, error) {
 }
 
 func (m JWTManager) ValidateJwtExtractClaims(jwtTokenString string) (jwt.MapClaims, error) {
-	rsaPublicSignature, err := LoadRSAPublicKeyFromDisk("../../../configs/rsa.pub")
+	rsaPublicSignature, err := m.LoadRSAPublicKeyFromDisk(m.pathToPublicSignature)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load the signature: %q", err)
 	}
@@ -77,7 +77,7 @@ func (m JWTManager) ValidateJwtExtractClaims(jwtTokenString string) (jwt.MapClai
 	return claims, nil
 }
 
-func LoadRSAPrivateKeyFromDisk(location string) (*rsa.PrivateKey, error) {
+func (m JWTManager) LoadRSAPrivateKeyFromDisk(location string) (*rsa.PrivateKey, error) {
 	keyData, err := os.ReadFile(location)
 	if err != nil {
 		return nil, err
@@ -89,7 +89,7 @@ func LoadRSAPrivateKeyFromDisk(location string) (*rsa.PrivateKey, error) {
 	return privateKey, nil
 }
 
-func LoadRSAPublicKeyFromDisk(location string) (*rsa.PublicKey, error) {
+func (m JWTManager) LoadRSAPublicKeyFromDisk(location string) (*rsa.PublicKey, error) {
 	keyData, err := os.ReadFile(location)
 	if err != nil {
 		return nil, err
@@ -98,5 +98,6 @@ func LoadRSAPublicKeyFromDisk(location string) (*rsa.PublicKey, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return publicKey, nil
 }
