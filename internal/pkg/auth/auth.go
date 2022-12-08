@@ -8,16 +8,18 @@ import (
 )
 
 type AuthServer struct {
-	repo      Repository
-	validator validators.AuthValidator
-	us        authv1.UnimplementedAuthServiceServer
+	repo       Repository
+	validator  validators.AuthValidator
+	jwtManager JWTManager
+	us         authv1.UnimplementedAuthServiceServer
 }
 
-func NewAuthServer(repo Repository, validator validators.AuthValidator) *AuthServer {
+func NewAuthServer(repo Repository, validator validators.AuthValidator, jwtManager JWTManager) *AuthServer {
 	return &AuthServer{
-		repo:      repo,
-		validator: validator,
-		us:        authv1.UnimplementedAuthServiceServer{},
+		repo:       repo,
+		validator:  validator,
+		jwtManager: jwtManager,
+		us:         authv1.UnimplementedAuthServiceServer{},
 	}
 }
 
@@ -25,14 +27,25 @@ func (s AuthServer) SignUp(ctx context.Context, req *authv1.SignUpRequest) (*aut
 	if err := s.validator.ValidateCredentials(req); err != nil {
 		return nil, err
 	}
-	if _, err := s.repo.CreateUser(ctx, req); err != nil {
+	createdUser, err := s.repo.CreateUser(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken, err := s.jwtManager.GenerateAccessToken(createdUser.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	refreshToken, err := s.jwtManager.GenerateRefreshToken(createdUser.UserID)
+	if err != nil {
 		return nil, err
 	}
 
 	return &authv1.SignUpResponse{
 		Tokens: &authv1.TokenPackage{
-			AccessToken:  "",
-			RefreshToken: "",
+			AccessToken:  accessToken,
+			RefreshToken: refreshToken,
 		},
 	}, nil
 }

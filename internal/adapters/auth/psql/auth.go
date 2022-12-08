@@ -1,4 +1,4 @@
-package psql_adapters
+package auth_psql_adapter
 
 import (
 	"context"
@@ -30,6 +30,7 @@ func (r PSQLRepository) CreateUser(ctx context.Context, req *authv1.SignUpReques
 		req.GetEmail(),
 		req.GetPassword(),
 	).RETURNING(
+		t.Accounts.UserID,
 		t.Accounts.Username,
 	)
 

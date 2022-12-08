@@ -1,3 +1,8 @@
 /pg_data
 /main
-/configs
+/configs/config.env
+/configs/docker.env
+/configs/rsa
+/configs/rsa.pub
+/configs/refresh_rsa
+/configs/refresh_rsa.pub

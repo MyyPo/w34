@@ -7,29 +7,35 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
 )
 
 type JWTManager struct {
-	pathToPrivateSignature string
-	pathToPublicSignature  string
-	accessTokenDuraion     time.Duration
-	refreshTokenDuration   time.Duration
+	pathToAccessPrivateSignature  string
+	pathToAccessPublicSignature   string
+	pathToRefreshPrivateSignature string
+	pathToRefreshPublicSignature  string
+	accessTokenDuraion            time.Duration
+	refreshTokenDuration          time.Duration
 }
 
 func NewJWTManager(
-	pathToPrivateSignature, pathToPublicSignature string,
+	pathToAccessPrivateSignature, pathToAccessPublicSignature string,
+	pathToRefreshPrivateSignature, pathToRefreshPublicSignature string,
 	accessTokenDuration, refreshTokenDuration time.Duration,
 ) *JWTManager {
 	return &JWTManager{
-		pathToPrivateSignature: pathToPrivateSignature,
-		pathToPublicSignature:  pathToPublicSignature,
-		accessTokenDuraion:     accessTokenDuration,
-		refreshTokenDuration:   refreshTokenDuration,
+		pathToAccessPrivateSignature:  pathToAccessPrivateSignature,
+		pathToAccessPublicSignature:   pathToAccessPublicSignature,
+		pathToRefreshPrivateSignature: pathToRefreshPrivateSignature,
+		pathToRefreshPublicSignature:  pathToRefreshPublicSignature,
+		accessTokenDuraion:            accessTokenDuration,
+		refreshTokenDuration:          refreshTokenDuration,
 	}
 }
 
-func (m JWTManager) GenerateJWT(userUUID string) (string, error) {
-	rsaPrivateSignature, err := m.LoadRSAPrivateKeyFromDisk(m.pathToPrivateSignature)
+func (m JWTManager) GenerateAccessToken(userUUID uuid.UUID) (string, error) {
+	rsaPrivateAccessSignature, err := m.LoadRSAPrivateKeyFromDisk(m.pathToAccessPrivateSignature)
 	if err != nil {
 		return "", err
 	}
@@ -41,18 +47,44 @@ func (m JWTManager) GenerateJWT(userUUID string) (string, error) {
 	claims["iat"] = now.Unix()
 	claims["nbf"] = now.Unix()
 	claims["sub"] = userUUID
+	claims["tkn_type"] = "access"
 
-	token, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(rsaPrivateSignature)
+	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(rsaPrivateAccessSignature)
 
 	if err != nil {
-		return "", fmt.Errorf("failed to add claims to token: %w", err)
+		return "", fmt.Errorf("failed to add claims to access token: %w", err)
 	}
 
-	return token, nil
+	return accessToken, nil
 }
 
-func (m JWTManager) ValidateJwtExtractClaims(jwtTokenString string) (jwt.MapClaims, error) {
-	rsaPublicSignature, err := m.LoadRSAPublicKeyFromDisk(m.pathToPublicSignature)
+func (m JWTManager) GenerateRefreshToken(userUUID uuid.UUID) (string, error) {
+	rsaPrivateRefreshSignature, err := m.LoadRSAPrivateKeyFromDisk(m.pathToRefreshPrivateSignature)
+	if err != nil {
+		return "", err
+	}
+
+	now := time.Now().UTC()
+
+	claims := make(jwt.MapClaims)
+
+	claims["exp"] = now.Add(m.refreshTokenDuration).Unix()
+	claims["iat"] = now.Unix()
+	claims["nbf"] = now.Unix()
+	claims["sub"] = userUUID
+	claims["tkn_type"] = "refresh"
+
+	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(rsaPrivateRefreshSignature)
+
+	if err != nil {
+		return "", fmt.Errorf("failed to add claims to refresh token: %w", err)
+	}
+
+	return refreshToken, nil
+}
+
+func (m JWTManager) ValidateJwtExtractClaims(jwtTokenString, publicSignaturePath string) (jwt.MapClaims, error) {
+	rsaPublicSignature, err := m.LoadRSAPublicKeyFromDisk(publicSignaturePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load the signature: %q", err)
 	}

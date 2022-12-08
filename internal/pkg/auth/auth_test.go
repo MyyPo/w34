@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"log"
 	"testing"
+	"time"
 
 	"github.com/MyyPo/w34.Go/configs"
 	authv1 "github.com/MyyPo/w34.Go/gen/go/auth/v1"
 	t "github.com/MyyPo/w34.Go/gen/psql/auth/public/table"
-	"github.com/MyyPo/w34.Go/internal/adapters/psql"
+	"github.com/MyyPo/w34.Go/internal/adapters/auth/psql"
 	"github.com/MyyPo/w34.Go/internal/pkg/validators"
 	. "github.com/go-jet/jet/v2/postgres"
 	_ "github.com/lib/pq"
@@ -21,7 +22,8 @@ const (
 	port     = 1234
 	user     = "spuser"
 	password = "SPuser96"
-	dbname   = "postgres"
+	// dbname   = "postgres"
+	dbname = "auth"
 )
 
 func TestSignUpSignIn(t *testing.T) {
@@ -43,6 +45,7 @@ func TestSignUpSignIn(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error while trying to sign up: %q", err)
 		}
+
 	})
 	t.Run("Try to signup with the taken username", func(t *testing.T) {
 		req := &authv1.SignUpRequest{
@@ -61,7 +64,10 @@ func TestSignUpSignIn(t *testing.T) {
 	// 		UnOrEmail: "stubhello",
 	// 		Password:  "stubhello",
 	// 	}
-	// 	// got, err := psqlImpl.SignIn
+	// 	got, err := psqlImpl.SignIn(context.Background(), req)
+	// 	if err != nil {
+	// 		t.Errorf()
+	// 	}
 	// })
 }
 
@@ -81,12 +87,17 @@ func setupPsql(t *testing.T) *AuthServer {
 	if err != nil {
 		log.Fatalf("failed to connect to db for testing: %q", err)
 	}
-	psqlRepo := psql_adapters.NewPSQLRepository(psqlDB)
+	psqlRepo := auth_psql_adapter.NewPSQLRepository(psqlDB)
 	authValidator, err := validators.NewAuthValidator(60, "^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$")
 	if err != nil {
 		log.Fatalf("failed to initialize validator for testing: %q", err)
 	}
+
+	jwtManager := NewJWTManager("../../../configs/rsa", "../../../configs/rsa.pub",
+		"../../../configs/refresh_rsa", "../../../configs/refresh_rsa.pub",
+		time.Minute*10, time.Hour*48)
+
 	// remove all affected database rows after the tests
 	t.Cleanup(func() { removeRows(psqlDB) })
-	return NewAuthServer(psqlRepo, *authValidator)
+	return NewAuthServer(psqlRepo, *authValidator, *jwtManager)
 }
