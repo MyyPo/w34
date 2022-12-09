@@ -66,5 +66,34 @@ func (s AuthServer) SignUp(ctx context.Context, req *authv1.SignUpRequest) (*aut
 }
 
 func (s AuthServer) SignIn(ctx context.Context, req *authv1.SignInRequest) (*authv1.SignInResponse, error) {
-	return nil, nil
+	usernameOrEmail := req.GetUnOrEmail()
+	userIDAndPassword, err := s.repo.LookupExistingUser(ctx, usernameOrEmail)
+	// throw error if user not found
+	if err != nil {
+		return nil, err
+	}
+	reqPassword := req.GetPassword()
+	hashedUserPassword := userIDAndPassword.Password
+
+	// compared password from request with hash returned from database
+	if err := s.hasher.CompareWithSecret(reqPassword, hashedUserPassword); err != nil {
+		return nil, err
+	}
+
+	accessToken, err := s.jwtManager.GenerateAccessToken(userIDAndPassword.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	refreshToken, err := s.jwtManager.GenerateRefreshToken(userIDAndPassword.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &authv1.SignInResponse{
+		Tokens: &authv1.TokenPackage{
+			AccessToken:  accessToken,
+			RefreshToken: refreshToken,
+		},
+	}, nil
 }

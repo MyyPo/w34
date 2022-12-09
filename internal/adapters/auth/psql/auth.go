@@ -55,6 +55,7 @@ func (r PSQLRepository) LookupExistingUser(
 	stmt := t.Accounts.
 		SELECT(
 			t.Accounts.UserID,
+			t.Accounts.Password,
 		).WHERE(
 		t.Accounts.Username.EQ(j.String(usernameOrEmail)).
 			OR(t.Accounts.Email.EQ(j.String(usernameOrEmail))),

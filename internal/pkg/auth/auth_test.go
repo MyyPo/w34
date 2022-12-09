@@ -61,13 +61,13 @@ func TestSignUpSignIn(t *testing.T) {
 	t.Run("Try to signin with created account", func(t *testing.T) {
 		req := &authv1.SignInRequest{
 			UnOrEmail: "stubhello",
-			Password:  "stubhello",
+			Password:  "stubhelloe21eqw121",
 		}
 		got, err := psqlImpl.SignIn(context.Background(), req)
 		if err != nil {
 			t.Errorf("unexpected error %v", err)
 		}
-		t.Logf("signing: %v", got)
+		t.Logf("signing: %v", got.GetTokens().AccessToken)
 	})
 }
 
