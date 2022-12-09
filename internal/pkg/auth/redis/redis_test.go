@@ -4,12 +4,15 @@ import (
 	"context"
 	"testing"
 	"time"
+
+	"github.com/MyyPo/w34.Go/internal/pkg/auth/hasher"
 )
 
 func TestRedisClient(t *testing.T) {
 	ctx := context.Background()
 
-	redis := NewRedisClient("localhost:6379", "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81")
+	hasher := hasher.NewHasher()
+	redis := NewRedisClient("localhost:6379", "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81", *hasher)
 
 	value := "hiyaaa"
 

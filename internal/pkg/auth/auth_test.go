@@ -12,7 +12,7 @@ import (
 	authv1 "github.com/MyyPo/w34.Go/gen/go/auth/v1"
 	t "github.com/MyyPo/w34.Go/gen/psql/auth/public/table"
 	"github.com/MyyPo/w34.Go/internal/adapters/auth/psql"
-	"github.com/MyyPo/w34.Go/internal/pkg/validators"
+	"github.com/MyyPo/w34.Go/internal/pkg/auth/validators"
 	. "github.com/go-jet/jet/v2/postgres"
 	_ "github.com/lib/pq"
 )
@@ -63,11 +63,11 @@ func TestSignUpSignIn(t *testing.T) {
 			UnOrEmail: "stubhello",
 			Password:  "stubhelloe21eqw121",
 		}
-		got, err := psqlImpl.SignIn(context.Background(), req)
+		_, err := psqlImpl.SignIn(context.Background(), req)
 		if err != nil {
 			t.Errorf("unexpected error %v", err)
 		}
-		t.Logf("signing: %v", got.GetTokens().AccessToken)
+		// t.Logf("signing: %v", got.GetTokens().AccessToken)
 	})
 }
 

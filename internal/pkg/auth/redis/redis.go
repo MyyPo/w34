@@ -1,12 +1,23 @@
 package auth_redis
 
-import "github.com/go-redis/redis/v9"
+import (
+	"context"
+	"strconv"
+	"time"
+
+	"github.com/MyyPo/w34.Go/internal/pkg/auth/hasher"
+	"github.com/go-redis/redis/v9"
+)
 
 type RedisClient struct {
-	db redis.Client
+	db     redis.Client
+	hasher hasher.Hasher
 }
 
-func NewRedisClient(address, password string) *RedisClient {
+func NewRedisClient(
+	address, password string,
+	hasher hasher.Hasher,
+) *RedisClient {
 	redisDB := redis.NewClient(&redis.Options{
 		Addr:     address,
 		Password: password,
@@ -14,6 +25,21 @@ func NewRedisClient(address, password string) *RedisClient {
 	})
 
 	return &RedisClient{
-		db: *redisDB,
+		db:     *redisDB,
+		hasher: hasher,
 	}
+}
+
+func (c RedisClient) StoreRefreshToken(
+	ctx context.Context,
+	userID int32,
+	refreshToken string,
+) *redis.StatusCmd {
+	strUserID := strconv.FormatInt(int64(userID), 10)
+	err := c.db.Set(ctx, strUserID, refreshToken, time.Hour*48)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
