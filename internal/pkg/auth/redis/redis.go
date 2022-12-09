@@ -34,9 +34,9 @@ func (c RedisClient) StoreRefreshToken(
 	ctx context.Context,
 	userID int32,
 	refreshToken string,
-) *redis.StatusCmd {
+) error {
 	strUserID := strconv.FormatInt(int64(userID), 10)
-	err := c.db.Set(ctx, strUserID, refreshToken, time.Hour*48)
+	err := c.db.Set(ctx, strUserID, refreshToken, time.Hour*48).Err()
 	if err != nil {
 		return err
 	}

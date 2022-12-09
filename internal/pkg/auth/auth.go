@@ -18,12 +18,18 @@ type AuthServer struct {
 	us          authv1.UnimplementedAuthServiceServer
 }
 
-func NewAuthServer(repo Repository, validator validators.AuthValidator, jwtManager JWTManager) *AuthServer {
+func NewAuthServer(
+	repo Repository,
+	redisClient auth_redis.RedisClient,
+	validator validators.AuthValidator,
+	jwtManager JWTManager,
+) *AuthServer {
 	return &AuthServer{
-		repo:       repo,
-		validator:  validator,
-		jwtManager: jwtManager,
-		us:         authv1.UnimplementedAuthServiceServer{},
+		repo:        repo,
+		redisClient: redisClient,
+		validator:   validator,
+		jwtManager:  jwtManager,
+		us:          authv1.UnimplementedAuthServiceServer{},
 	}
 }
 
@@ -50,12 +56,19 @@ func (s AuthServer) SignUp(ctx context.Context, req *authv1.SignUpRequest) (*aut
 		return nil, err
 	}
 
-	accessToken, err := s.jwtManager.GenerateAccessToken(createdUser.UserID)
+	createdUserID := createdUser.UserID
+
+	accessToken, err := s.jwtManager.GenerateAccessToken(createdUserID)
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, err := s.jwtManager.GenerateRefreshToken(createdUser.UserID)
+	refreshToken, err := s.jwtManager.GenerateRefreshToken(createdUserID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.redisClient.StoreRefreshToken(ctx, createdUserID, refreshToken)
 	if err != nil {
 		return nil, err
 	}
@@ -83,12 +96,19 @@ func (s AuthServer) SignIn(ctx context.Context, req *authv1.SignInRequest) (*aut
 		return nil, err
 	}
 
-	accessToken, err := s.jwtManager.GenerateAccessToken(userIDAndPassword.UserID)
+	retrievedUserID := userIDAndPassword.UserID
+
+	accessToken, err := s.jwtManager.GenerateAccessToken(retrievedUserID)
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, err := s.jwtManager.GenerateRefreshToken(userIDAndPassword.UserID)
+	refreshToken, err := s.jwtManager.GenerateRefreshToken(retrievedUserID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.redisClient.StoreRefreshToken(ctx, retrievedUserID, refreshToken)
 	if err != nil {
 		return nil, err
 	}
