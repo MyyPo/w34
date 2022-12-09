@@ -45,7 +45,6 @@ func TestSignUpSignIn(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error while trying to sign up: %q", err)
 		}
-
 	})
 	t.Run("Try to signup with the taken username", func(t *testing.T) {
 		req := &authv1.SignUpRequest{

@@ -13,7 +13,7 @@ tasks:
       - go test ./internal/...
   testv:
     cmds:
-      - go test ./internal/... -v
+      - go test ./internal/... -v -count=1
 
   tauth:
     cmds:
@@ -21,3 +21,6 @@ tasks:
   tvalidators:
     cmds:
       - go test ./internal/pkg/validators -v
+  tauthredis:
+    cmds:
+      - go test ./internal/pkg/auth/redis -v

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/google/uuid"
 )
 
 type JWTManager struct {
@@ -34,7 +33,7 @@ func NewJWTManager(
 	}
 }
 
-func (m JWTManager) GenerateAccessToken(userUUID uuid.UUID) (string, error) {
+func (m JWTManager) GenerateAccessToken(userID int64) (string, error) {
 	rsaPrivateAccessSignature, err := m.LoadRSAPrivateKeyFromDisk(m.pathToAccessPrivateSignature)
 	if err != nil {
 		return "", err
@@ -46,7 +45,7 @@ func (m JWTManager) GenerateAccessToken(userUUID uuid.UUID) (string, error) {
 	claims["exp"] = now.Add(m.accessTokenDuraion).Unix()
 	claims["iat"] = now.Unix()
 	claims["nbf"] = now.Unix()
-	claims["sub"] = userUUID
+	claims["sub"] = userID
 	claims["tkn_type"] = "access"
 
 	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(rsaPrivateAccessSignature)
@@ -58,7 +57,7 @@ func (m JWTManager) GenerateAccessToken(userUUID uuid.UUID) (string, error) {
 	return accessToken, nil
 }
 
-func (m JWTManager) GenerateRefreshToken(userUUID uuid.UUID) (string, error) {
+func (m JWTManager) GenerateRefreshToken(userID int64) (string, error) {
 	rsaPrivateRefreshSignature, err := m.LoadRSAPrivateKeyFromDisk(m.pathToRefreshPrivateSignature)
 	if err != nil {
 		return "", err
@@ -71,7 +70,7 @@ func (m JWTManager) GenerateRefreshToken(userUUID uuid.UUID) (string, error) {
 	claims["exp"] = now.Add(m.refreshTokenDuration).Unix()
 	claims["iat"] = now.Unix()
 	claims["nbf"] = now.Unix()
-	claims["sub"] = userUUID
+	claims["sub"] = userID
 	claims["tkn_type"] = "refresh"
 
 	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(rsaPrivateRefreshSignature)

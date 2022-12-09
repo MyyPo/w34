@@ -12,7 +12,7 @@ func TestHasher(t *testing.T) {
 
 	t.Run("Hash the password, make sure that it has been turned into hash", func(t *testing.T) {
 
-		got, err := hasher.Hash(psw)
+		got, err := hasher.HashSecret(psw)
 		if err != nil {
 			t.Errorf("error while trying to hash a password: %q", err)
 		}
@@ -22,14 +22,14 @@ func TestHasher(t *testing.T) {
 		pswHash = got
 	})
 	t.Run("Compare the password and VALID hash for it", func(t *testing.T) {
-		err := hasher.Compare(psw, pswHash)
+		err := hasher.CompareWithSecret(psw, pswHash)
 		if err != nil {
 			t.Errorf("the valid password wasn't equal to its hash: %q", err)
 		}
 	})
 	t.Run("Try INVALID password for hash", func(t *testing.T) {
 		invalidPsw := "SillyPassword"
-		err := hasher.Compare(invalidPsw, pswHash)
+		err := hasher.CompareWithSecret(invalidPsw, pswHash)
 		if err == nil {
 			t.Errorf("hasher didn't raise the error for invalid password")
 		}

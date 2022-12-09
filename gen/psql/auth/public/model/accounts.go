@@ -8,17 +8,16 @@
 package model
 
 import (
-	"github.com/google/uuid"
 	"time"
 )
 
 type Accounts struct {
-	UserID        uuid.UUID
+	UserID        int64 `sql:"primary_key"`
 	Username      string
 	Password      string
 	Email         string
 	AccountStatus Status
-	Online        bool
-	CreatedAt     time.Time
-	LastLogin     time.Time
+	Online        *bool
+	CreatedAt     *time.Time
+	LastLogin     *time.Time
 }

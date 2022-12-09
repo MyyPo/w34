@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/google/uuid"
 )
 
 func TestJWT(t *testing.T) {
@@ -15,9 +14,9 @@ func TestJWT(t *testing.T) {
 		time.Minute*10, time.Hour*48)
 
 	t.Run("Create an access token, then validate it", func(t *testing.T) {
-		userUUID := uuid.New()
+		var userID int64 = 11
 
-		gotJWT, err := jwtManager.GenerateAccessToken(userUUID)
+		gotJWT, err := jwtManager.GenerateAccessToken(userID)
 		if err != nil {
 			t.Errorf("jwt error: %q", err)
 		}
@@ -27,9 +26,9 @@ func TestJWT(t *testing.T) {
 			t.Errorf("failed to parse the test token: %q", err)
 		}
 		sub := testClaims["sub"]
-		sub, _ = uuid.Parse(sub.(string))
-		if sub != userUUID {
-			t.Errorf("issued sub: %s, want id: %s", sub, userUUID)
+		sub, _ = sub.(int64)
+		if sub != userID {
+			t.Errorf("issued sub: %v, want id: %v", sub, userID)
 		}
 
 		gotClaims, err := jwtManager.ValidateJwtExtractClaims(gotJWT, jwtManager.pathToAccessPublicSignature)
@@ -38,9 +37,9 @@ func TestJWT(t *testing.T) {
 		}
 
 		sub = gotClaims["sub"]
-		sub, _ = uuid.Parse(sub.(string))
-		if sub != userUUID {
-			t.Errorf("issued sub: %s, want id: %s", sub, userUUID)
+		// sub, _ = sub.(int64)
+		if sub != userID {
+			t.Errorf("issued sub: %v, want id: %v", sub, userID)
 		}
 		if tknType := gotClaims["tkn_type"]; tknType != "access" {
 			t.Errorf("issued tkn_type: %s, want tkn_type: %s", tknType, "access")
@@ -51,15 +50,14 @@ func TestJWT(t *testing.T) {
 		hs256Token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 
 		_, err := jwtManager.ValidateJwtExtractClaims(hs256Token, jwtManager.pathToAccessPublicSignature)
-		t.Logf("err: %q", err)
 		if err == nil {
 			t.Errorf("invalid token validated")
 		}
 	})
 	t.Run("Create and validate a refresh token", func(t *testing.T) {
-		userUUID := uuid.New()
+		var userID int64 = 5
 
-		gotJWT, err := jwtManager.GenerateRefreshToken(userUUID)
+		gotJWT, err := jwtManager.GenerateRefreshToken(userID)
 		if err != nil {
 			t.Errorf("jwt error: %q", err)
 		}
@@ -70,11 +68,16 @@ func TestJWT(t *testing.T) {
 		}
 
 		if tknType := gotClaims["tkn_type"]; tknType != "refresh" {
-			t.Errorf("issued tkn_type: %s, want tkn_type: %s", tknType.(string), "access")
+			t.Errorf("issued tkn_type: %v, want tkn_type: %s", tknType, "access")
 		}
 		sub := gotClaims["sub"]
-		if sub, _ = uuid.Parse(sub.(string)); sub != userUUID {
-			t.Errorf("issued sub: %s, want id: %s", sub.(string), userUUID)
+		// sub, ok := sub.(int64)
+		// if !ok {
+		// 	t.Errorf("failed to convert")
+		// }
+
+		if sub != userID {
+			t.Errorf("issued sub: %v, want id: %v", sub, userID)
 		}
 
 	})

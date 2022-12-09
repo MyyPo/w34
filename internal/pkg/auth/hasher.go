@@ -9,8 +9,8 @@ func NewHasher() *Hasher {
 	return &Hasher{}
 }
 
-func (h Hasher) Hash(password string) (string, error) {
-	hashed, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+func (h Hasher) HashSecret(secret string) (string, error) {
+	hashed, err := bcrypt.GenerateFromPassword([]byte(secret), 12)
 	if err != nil {
 		return "", err
 	}
@@ -18,7 +18,7 @@ func (h Hasher) Hash(password string) (string, error) {
 	return string(hashed), nil
 }
 
-func (h Hasher) Compare(password, hash string) error {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+func (h Hasher) CompareWithSecret(secret, hash string) error {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(secret))
 	return err
 }
