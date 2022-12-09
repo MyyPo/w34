@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 
-	authv1 "github.com/MyyPo/w34.Go/gen/go/auth/v1"
 	"github.com/MyyPo/w34.Go/gen/psql/auth/public/model"
 	t "github.com/MyyPo/w34.Go/gen/psql/auth/public/table"
 	// . "github.com/go-jet/jet/v2/postgres"
@@ -18,7 +17,12 @@ func NewPSQLRepository(db *sql.DB) *PSQLRepository {
 	return &PSQLRepository{db: db}
 }
 
-func (r PSQLRepository) CreateUser(ctx context.Context, req *authv1.SignUpRequest) (model.Accounts, error) {
+func (r PSQLRepository) CreateUser(
+	ctx context.Context,
+	newUsername string,
+	newEmail string,
+	newHashedPassword string,
+) (model.Accounts, error) {
 
 	stmt := t.Accounts.
 		INSERT(
@@ -26,9 +30,9 @@ func (r PSQLRepository) CreateUser(ctx context.Context, req *authv1.SignUpReques
 			t.Accounts.Email,
 			t.Accounts.Password,
 		).VALUES(
-		req.GetUsername(),
-		req.GetEmail(),
-		req.GetPassword(),
+		newUsername,
+		newEmail,
+		newHashedPassword,
 	).RETURNING(
 		t.Accounts.UserID,
 		t.Accounts.Username,

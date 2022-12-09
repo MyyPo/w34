@@ -11,6 +11,7 @@ type AuthServer struct {
 	repo       Repository
 	validator  validators.AuthValidator
 	jwtManager JWTManager
+	hasher     Hasher
 	us         authv1.UnimplementedAuthServiceServer
 }
 
@@ -27,7 +28,15 @@ func (s AuthServer) SignUp(ctx context.Context, req *authv1.SignUpRequest) (*aut
 	if err := s.validator.ValidateCredentials(req); err != nil {
 		return nil, err
 	}
-	createdUser, err := s.repo.CreateUser(ctx, req)
+
+	newUsername := req.GetUsername()
+	newEmail := req.GetEmail()
+	newHashedPassword, err := s.hasher.HashSecret(req.GetPassword())
+	if err != nil {
+		return nil, err
+	}
+
+	createdUser, err := s.repo.CreateUser(ctx, newUsername, newEmail, newHashedPassword)
 	if err != nil {
 		return nil, err
 	}
