@@ -6,8 +6,6 @@ import (
 	"regexp"
 
 	pwv "github.com/wagslane/go-password-validator"
-
-	authv1 "github.com/MyyPo/w34.Go/gen/go/auth/v1"
 )
 
 type AuthValidator struct {
@@ -27,10 +25,21 @@ func NewAuthValidator(minEntropy float64, usernameRgxString string) (*AuthValida
 	}, nil
 }
 
-func (v AuthValidator) ValidateCredentials(req *authv1.SignUpRequest) error {
-	if err := v.ValidateEmail(req.GetEmail()); err != nil {
+func (v AuthValidator) ValidateSignUpCredentials(
+	username string,
+	email string,
+	password string,
+) error {
+	if err := v.ValidateUsername(username); err != nil {
 		return err
 	}
+	if err := v.ValidateEmail(email); err != nil {
+		return err
+	}
+	if err := v.ValidatePassword(password); err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -2,8 +2,6 @@ package validators
 
 import (
 	"testing"
-
-	authv1 "github.com/MyyPo/w34.Go/gen/go/auth/v1"
 )
 
 const usernameRegex = "^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$"
@@ -13,27 +11,21 @@ var authV, _ = NewAuthValidator(60, usernameRegex)
 func TestValidateCredentials(t *testing.T) {
 	t.Parallel()
 	t.Run("Correct credentials", func(t *testing.T) {
-		req := authv1.SignUpRequest{
-			Username: "Hey",
-			Email:    "val@g.com",
-			Password: "dqkrm23rmm9QM",
-		}
+		username := "Hey"
+		email := "val@g.com"
+		password := "dqkrm23rmm9QM"
 
-		err := authV.ValidateCredentials(&req)
+		err := authV.ValidateSignUpCredentials(username, email, password)
 		if err != nil {
 			t.Errorf("Correct credentials were seen as invalid %q", err)
 		}
 	})
 	t.Run("Incorrect credentials", func(t *testing.T) {
+		username := "Hey"
 		invalidEmail := "infv@"
+		password := "dkJ2C3PRU093dm"
 
-		req := authv1.SignUpRequest{
-			Username: "Hey",
-			Email:    invalidEmail,
-			Password: "dkJ2C3PRU093dm",
-		}
-
-		err := authV.ValidateCredentials(&req)
+		err := authV.ValidateSignUpCredentials(username, invalidEmail, password)
 		if err == nil {
 			t.Errorf("Incorrect email validated")
 		}

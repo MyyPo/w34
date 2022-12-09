@@ -38,7 +38,7 @@ func TestSignUpSignIn(t *testing.T) {
 		req := &authv1.SignUpRequest{
 			Username: "stubhello",
 			Email:    "stubhello@stub.com",
-			Password: "stubhello",
+			Password: "stubhelloe21eqw121",
 		}
 
 		_, err := psqlImpl.SignUp(context.Background(), req)
@@ -50,7 +50,7 @@ func TestSignUpSignIn(t *testing.T) {
 		req := &authv1.SignUpRequest{
 			Username: "stubhello",
 			Email:    "validemail@stub.com",
-			Password: "stubhello",
+			Password: "stubhelloe21eqw121",
 		}
 
 		_, err := psqlImpl.SignUp(context.Background(), req)
@@ -58,23 +58,24 @@ func TestSignUpSignIn(t *testing.T) {
 			t.Errorf("succesfully signed up with the taken username")
 		}
 	})
-	// t.Run("Try to signin with created account", func(t *testing.T) {
-	// 	req := &authv1.SignInRequest{
-	// 		UnOrEmail: "stubhello",
-	// 		Password:  "stubhello",
-	// 	}
-	// 	got, err := psqlImpl.SignIn(context.Background(), req)
-	// 	if err != nil {
-	// 		t.Errorf()
-	// 	}
-	// })
+	t.Run("Try to signin with created account", func(t *testing.T) {
+		req := &authv1.SignInRequest{
+			UnOrEmail: "stubhello",
+			Password:  "stubhello",
+		}
+		got, err := psqlImpl.SignIn(context.Background(), req)
+		if err != nil {
+			t.Errorf("unexpected error %v", err)
+		}
+		t.Logf("signing: %v", got)
+	})
 }
 
 func removeRows(db *sql.DB) {
 	stmt := t.Accounts.
 		DELETE().
 		WHERE(
-			t.Accounts.Username.NOT_EQ(String("")),
+			t.Accounts.Username.EQ(String("stubhello")),
 		)
 	stmt.Exec(db)
 }

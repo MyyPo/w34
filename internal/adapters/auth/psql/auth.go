@@ -6,7 +6,7 @@ import (
 
 	"github.com/MyyPo/w34.Go/gen/psql/auth/public/model"
 	t "github.com/MyyPo/w34.Go/gen/psql/auth/public/table"
-	// . "github.com/go-jet/jet/v2/postgres"
+	j "github.com/go-jet/jet/v2/postgres"
 )
 
 type PSQLRepository struct {
@@ -36,6 +36,28 @@ func (r PSQLRepository) CreateUser(
 	).RETURNING(
 		t.Accounts.UserID,
 		t.Accounts.Username,
+	)
+
+	var result model.Accounts
+	err := stmt.Query(r.db, &result)
+	if err != nil {
+		return model.Accounts{}, err
+	}
+
+	return result, nil
+}
+
+func (r PSQLRepository) LookupExistingUser(
+	ctx context.Context,
+	usernameOrEmail string,
+) (model.Accounts, error) {
+
+	stmt := t.Accounts.
+		SELECT(
+			t.Accounts.UserID,
+		).WHERE(
+		t.Accounts.Username.EQ(j.String(usernameOrEmail)).
+			OR(t.Accounts.Email.EQ(j.String(usernameOrEmail))),
 	)
 
 	var result model.Accounts

@@ -7,10 +7,14 @@ import (
 )
 
 type Repository interface {
-	CreateUser(ctx context.Context,
+	CreateUser(
+		ctx context.Context,
 		newUsername string,
 		newEmail string,
 		newHashedPassword string,
 	) (model.Accounts, error)
-	// LookupUser(ctx context.Context, req *authv1.SignInRequest) (model.Accounts, error)
+	LookupExistingUser(
+		ctx context.Context,
+		usernameOrEmail string,
+	) (model.Accounts, error)
 }

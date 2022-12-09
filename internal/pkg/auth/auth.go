@@ -25,13 +25,19 @@ func NewAuthServer(repo Repository, validator validators.AuthValidator, jwtManag
 }
 
 func (s AuthServer) SignUp(ctx context.Context, req *authv1.SignUpRequest) (*authv1.SignUpResponse, error) {
-	if err := s.validator.ValidateCredentials(req); err != nil {
+	newUsername := req.GetUsername()
+	newEmail := req.GetEmail()
+	newPassword := req.GetPassword()
+
+	if err := s.validator.ValidateSignUpCredentials(
+		newUsername,
+		newEmail,
+		newPassword,
+	); err != nil {
 		return nil, err
 	}
 
-	newUsername := req.GetUsername()
-	newEmail := req.GetEmail()
-	newHashedPassword, err := s.hasher.HashSecret(req.GetPassword())
+	newHashedPassword, err := s.hasher.HashSecret(newPassword)
 	if err != nil {
 		return nil, err
 	}
@@ -57,4 +63,8 @@ func (s AuthServer) SignUp(ctx context.Context, req *authv1.SignUpRequest) (*aut
 			RefreshToken: refreshToken,
 		},
 	}, nil
+}
+
+func (s AuthServer) SignIn(ctx context.Context, req *authv1.SignInRequest) (*authv1.SignInResponse, error) {
+	return nil, nil
 }
