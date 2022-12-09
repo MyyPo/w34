@@ -12,7 +12,7 @@ import (
 )
 
 type Accounts struct {
-	UserID        int64 `sql:"primary_key"`
+	UserID        int32 `sql:"primary_key"`
 	Username      string
 	Password      string
 	Email         string

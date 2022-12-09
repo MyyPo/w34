@@ -4,6 +4,7 @@ import (
 	"crypto/rsa"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -33,20 +34,33 @@ func NewJWTManager(
 	}
 }
 
-func (m JWTManager) GenerateAccessToken(userID int64) (string, error) {
+type Claims struct {
+	TknType string `json:"tkn_type"`
+	jwt.RegisteredClaims
+}
+
+func (m JWTManager) GenerateAccessToken(userID int32) (string, error) {
 	rsaPrivateAccessSignature, err := m.LoadRSAPrivateKeyFromDisk(m.pathToAccessPrivateSignature)
 	if err != nil {
 		return "", err
 	}
 
 	now := time.Now().UTC()
+	expires := now.Add(m.accessTokenDuraion)
+	numericDateNow := jwt.NewNumericDate(now)
+	numericDateExpires := jwt.NewNumericDate(expires)
 
-	claims := make(jwt.MapClaims)
-	claims["exp"] = now.Add(m.accessTokenDuraion).Unix()
-	claims["iat"] = now.Unix()
-	claims["nbf"] = now.Unix()
-	claims["sub"] = userID
-	claims["tkn_type"] = "access"
+	strUserID := strconv.FormatInt(int64(userID), 10)
+
+	claims := Claims{
+		"access",
+		jwt.RegisteredClaims{
+			ExpiresAt: numericDateExpires,
+			IssuedAt:  numericDateNow,
+			NotBefore: numericDateNow,
+			Subject:   strUserID,
+		},
+	}
 
 	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(rsaPrivateAccessSignature)
 
@@ -57,21 +71,28 @@ func (m JWTManager) GenerateAccessToken(userID int64) (string, error) {
 	return accessToken, nil
 }
 
-func (m JWTManager) GenerateRefreshToken(userID int64) (string, error) {
+func (m JWTManager) GenerateRefreshToken(userID int32) (string, error) {
 	rsaPrivateRefreshSignature, err := m.LoadRSAPrivateKeyFromDisk(m.pathToRefreshPrivateSignature)
 	if err != nil {
 		return "", err
 	}
 
 	now := time.Now().UTC()
+	expires := now.Add(m.refreshTokenDuration)
+	numericDateNow := jwt.NewNumericDate(now)
+	numericDateExpires := jwt.NewNumericDate(expires)
 
-	claims := make(jwt.MapClaims)
+	strUserID := strconv.FormatInt(int64(userID), 10)
 
-	claims["exp"] = now.Add(m.refreshTokenDuration).Unix()
-	claims["iat"] = now.Unix()
-	claims["nbf"] = now.Unix()
-	claims["sub"] = userID
-	claims["tkn_type"] = "refresh"
+	claims := Claims{
+		"refresh",
+		jwt.RegisteredClaims{
+			ExpiresAt: numericDateExpires,
+			IssuedAt:  numericDateNow,
+			NotBefore: numericDateNow,
+			Subject:   strUserID,
+		},
+	}
 
 	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(rsaPrivateRefreshSignature)
 
@@ -82,13 +103,14 @@ func (m JWTManager) GenerateRefreshToken(userID int64) (string, error) {
 	return refreshToken, nil
 }
 
-func (m JWTManager) ValidateJwtExtractClaims(jwtTokenString, publicSignaturePath string) (jwt.MapClaims, error) {
+func (m JWTManager) ValidateJwtExtractClaims(jwtTokenString, publicSignaturePath string) (*Claims, error) {
 	rsaPublicSignature, err := m.LoadRSAPublicKeyFromDisk(publicSignaturePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load the signature: %q", err)
 	}
 
-	jwtToken, err := jwt.Parse(jwtTokenString, func(token *jwt.Token) (interface{}, error) {
+	var claims *Claims
+	jwtToken, err := jwt.ParseWithClaims(jwtTokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		// check if the signing algorithm is correct
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -96,12 +118,13 @@ func (m JWTManager) ValidateJwtExtractClaims(jwtTokenString, publicSignaturePath
 		// check the signature of the token
 		return rsaPublicSignature, nil
 	})
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to verify: %q", err)
 	}
 
-	claims, ok := jwtToken.Claims.(jwt.MapClaims)
-	if !ok {
+	claims, ok := jwtToken.Claims.(*Claims)
+	if !ok || !jwtToken.Valid {
 		return nil, fmt.Errorf("claims error: %q", err)
 	}
 

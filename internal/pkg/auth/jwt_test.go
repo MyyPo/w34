@@ -1,11 +1,8 @@
 package auth
 
 import (
-	"fmt"
 	"testing"
 	"time"
-
-	"github.com/golang-jwt/jwt/v4"
 )
 
 func TestJWT(t *testing.T) {
@@ -14,34 +11,25 @@ func TestJWT(t *testing.T) {
 		time.Minute*10, time.Hour*48)
 
 	t.Run("Create an access token, then validate it", func(t *testing.T) {
-		var userID int64 = 11
+		var userID int32 = 11
 
 		gotJWT, err := jwtManager.GenerateAccessToken(userID)
 		if err != nil {
 			t.Errorf("jwt error: %q", err)
 		}
-		// test the token with a test function independent from jwt manager implementation
-		testClaims, err := parseTestToken(t, gotJWT, *jwtManager)
-		if err != nil {
-			t.Errorf("failed to parse the test token: %q", err)
-		}
-		sub := testClaims["sub"]
-		sub, _ = sub.(int64)
-		if sub != userID {
-			t.Errorf("issued sub: %v, want id: %v", sub, userID)
-		}
+
+		strUserID := "11"
 
 		gotClaims, err := jwtManager.ValidateJwtExtractClaims(gotJWT, jwtManager.pathToAccessPublicSignature)
 		if err != nil {
 			t.Errorf("failed to validate valid token: %q", err)
 		}
 
-		sub = gotClaims["sub"]
-		// sub, _ = sub.(int64)
-		if sub != userID {
-			t.Errorf("issued sub: %v, want id: %v", sub, userID)
+		sub := gotClaims.Subject
+		if sub != strUserID {
+			t.Errorf("issued sub: %v, want id: %v", sub, strUserID)
 		}
-		if tknType := gotClaims["tkn_type"]; tknType != "access" {
+		if tknType := gotClaims.TknType; tknType != "access" {
 			t.Errorf("issued tkn_type: %s, want tkn_type: %s", tknType, "access")
 		}
 
@@ -55,7 +43,7 @@ func TestJWT(t *testing.T) {
 		}
 	})
 	t.Run("Create and validate a refresh token", func(t *testing.T) {
-		var userID int64 = 5
+		var userID int32 = 5
 
 		gotJWT, err := jwtManager.GenerateRefreshToken(userID)
 		if err != nil {
@@ -67,47 +55,16 @@ func TestJWT(t *testing.T) {
 			t.Errorf("failed to validate valid token: %q", err)
 		}
 
-		if tknType := gotClaims["tkn_type"]; tknType != "refresh" {
-			t.Errorf("issued tkn_type: %v, want tkn_type: %s", tknType, "access")
+		if tknType := gotClaims.TknType; tknType != "refresh" {
+			t.Errorf("issued tkn_type: %v, want tkn_type: %s", tknType, "refresh")
 		}
-		sub := gotClaims["sub"]
-		// sub, ok := sub.(int64)
-		// if !ok {
-		// 	t.Errorf("failed to convert")
-		// }
+		sub := gotClaims.Subject
 
-		if sub != userID {
-			t.Errorf("issued sub: %v, want id: %v", sub, userID)
+		strUserID := "5"
+
+		if sub != strUserID {
+			t.Errorf("issued sub: %s, want id: %s", sub, strUserID)
 		}
 
 	})
-}
-
-func parseTestToken(t *testing.T, tokenString string, jwtManager JWTManager) (jwt.MapClaims, error) {
-	t.Helper()
-	rsaPublicSignature, err := jwtManager.LoadRSAPublicKeyFromDisk("../../../configs/rsa.pub")
-	if err != nil {
-		return nil, fmt.Errorf("failed to load the signature: %q", err)
-	}
-
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		// check the algorithm
-		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-
-		// on success return our secret to satisfy the parse function
-		// if the signature on token != our returned signature, returns error
-		return rsaPublicSignature, nil
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to verify: %q", err)
-	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		return nil, fmt.Errorf("claims error: %v", err)
-	}
-
-	return claims, nil
 }
