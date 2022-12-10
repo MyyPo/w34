@@ -35,6 +35,8 @@ func TestSignUpSignIn(t *testing.T) {
 		t.Errorf("failed to load config: %q", err)
 	}
 
+	var finalTestRefreshToken string
+
 	t.Run("Successful signup", func(t *testing.T) {
 
 		req := &authv1.SignUpRequest{
@@ -65,11 +67,24 @@ func TestSignUpSignIn(t *testing.T) {
 			UnOrEmail: "stubhello",
 			Password:  "stubhelloe21eqw121",
 		}
-		_, err := psqlImpl.SignIn(context.Background(), req)
+		res, err := psqlImpl.SignIn(context.Background(), req)
 		if err != nil {
 			t.Errorf("unexpected error %v", err)
 		}
-		// t.Logf("signing: %v", got.GetTokens().AccessToken)
+		// save tokens for the next test
+		finalTestRefreshToken = res.GetTokens().GetRefreshToken()
+	})
+	t.Run("Refresh the token", func(t *testing.T) {
+		req := &authv1.RefreshTokensRequest{
+			RefreshToken: finalTestRefreshToken,
+		}
+		t.Logf("refresh token: %s", finalTestRefreshToken)
+		res, err := psqlImpl.RefreshTokens(context.Background(), req)
+		if err != nil {
+			t.Errorf("refresh tokens error: %v", err)
+		}
+		endAccessToken := res.GetTokens().GetAccessToken()
+		t.Logf("end token: %s", endAccessToken)
 	})
 }
 

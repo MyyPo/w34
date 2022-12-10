@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"strconv"
 
 	authv1 "github.com/MyyPo/w34.Go/gen/go/auth/v1"
 	"github.com/MyyPo/w34.Go/internal/pkg/auth/hasher"
@@ -33,7 +34,10 @@ func NewAuthServer(
 	}
 }
 
-func (s AuthServer) SignUp(ctx context.Context, req *authv1.SignUpRequest) (*authv1.SignUpResponse, error) {
+func (s AuthServer) SignUp(
+	ctx context.Context,
+	req *authv1.SignUpRequest,
+) (*authv1.SignUpResponse, error) {
 	newUsername := req.GetUsername()
 	newEmail := req.GetEmail()
 	newPassword := req.GetPassword()
@@ -81,7 +85,10 @@ func (s AuthServer) SignUp(ctx context.Context, req *authv1.SignUpRequest) (*aut
 	}, nil
 }
 
-func (s AuthServer) SignIn(ctx context.Context, req *authv1.SignInRequest) (*authv1.SignInResponse, error) {
+func (s AuthServer) SignIn(
+	ctx context.Context,
+	req *authv1.SignInRequest,
+) (*authv1.SignInResponse, error) {
 	usernameOrEmail := req.GetUnOrEmail()
 	userIDAndPassword, err := s.repo.LookupExistingUser(ctx, usernameOrEmail)
 	// throw error if user not found
@@ -97,6 +104,9 @@ func (s AuthServer) SignIn(ctx context.Context, req *authv1.SignInRequest) (*aut
 	}
 
 	retrievedUserID := userIDAndPassword.UserID
+
+	// delete the valid refresh token stored in db for this account, if it exists
+	s.redisClient.DeleteRefreshToken(ctx, retrievedUserID)
 
 	accessToken, err := s.jwtManager.GenerateAccessToken(retrievedUserID)
 	if err != nil {
@@ -117,6 +127,50 @@ func (s AuthServer) SignIn(ctx context.Context, req *authv1.SignInRequest) (*aut
 		Tokens: &authv1.TokenPackage{
 			AccessToken:  accessToken,
 			RefreshToken: refreshToken,
+		},
+	}, nil
+}
+
+func (s AuthServer) RefreshTokens(
+	ctx context.Context,
+	req *authv1.RefreshTokensRequest,
+) (*authv1.RefreshTokensResponse, error) {
+
+	oldRefreshToken := req.GetRefreshToken()
+	tokenClaims, err := s.jwtManager.ValidateJwtExtractClaims(oldRefreshToken, s.jwtManager.pathToRefreshPublicSignature)
+	if err != nil {
+		return nil, err
+	}
+
+	userID := tokenClaims.Subject
+
+	// delete the valid refresh token stored in db for this account
+	err = s.redisClient.DeleteRefreshTokenStringID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	// create new tokens
+	intUserID, _ := strconv.ParseInt(userID, 10, 32)
+	int32UserID := int32(intUserID)
+	newAccessToken, err := s.jwtManager.GenerateAccessToken(int32UserID)
+	if err != nil {
+		return nil, err
+	}
+	newRefreshToken, err := s.jwtManager.GenerateRefreshToken(int32UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.redisClient.StoreRefreshTokenStringID(ctx, userID, newRefreshToken)
+	if err != nil {
+		return nil, err
+	}
+
+	return &authv1.RefreshTokensResponse{
+		Tokens: &authv1.TokenPackage{
+			AccessToken:  newAccessToken,
+			RefreshToken: newRefreshToken,
 		},
 	}, nil
 }

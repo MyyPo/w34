@@ -43,3 +43,40 @@ func (c RedisClient) StoreRefreshToken(
 
 	return nil
 }
+
+func (c RedisClient) StoreRefreshTokenStringID(
+	ctx context.Context,
+	userID string,
+	refreshToken string,
+) error {
+	err := c.db.Set(ctx, userID, refreshToken, time.Hour*48).Err()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c RedisClient) DeleteRefreshToken(
+	ctx context.Context,
+	userID int32,
+) error {
+	strUserID := strconv.FormatInt(int64(userID), 10)
+	err := c.db.Del(ctx, strUserID).Err()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+func (c RedisClient) DeleteRefreshTokenStringID(
+	ctx context.Context,
+	userID string,
+) error {
+	err := c.db.Del(ctx, userID).Err()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

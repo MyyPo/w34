@@ -32,7 +32,7 @@ message SignInResponse {
 }
 
 message RefreshTokensRequest {
-    TokenPackage tokens = 1;    
+    string refresh_token = 1;
 }
 
 message RefreshTokensResponse {
