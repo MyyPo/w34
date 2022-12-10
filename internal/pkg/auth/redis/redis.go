@@ -2,17 +2,21 @@ package auth_redis
 
 import (
 	"context"
-	"github.com/bsm/redislock"
 	"strconv"
 	"time"
+
+	"github.com/go-redsync/redsync/v4"
+	"github.com/go-redsync/redsync/v4/redis/goredis/v9"
 
 	"github.com/MyyPo/w34.Go/internal/pkg/auth/hasher"
 	"github.com/go-redis/redis/v9"
 )
 
 type RedisClient struct {
-	db     redis.Client
-	hasher hasher.Hasher
+	db        redis.Client
+	hasher    hasher.Hasher
+	redSync   *redsync.Redsync
+	mutexName string
 }
 
 func NewRedisClient(
@@ -25,9 +29,14 @@ func NewRedisClient(
 		DB:       0,
 	})
 
+	pool := goredis.NewPool(redisDB)
+	redSync := redsync.New(pool)
+
 	return &RedisClient{
-		db:     *redisDB,
-		hasher: hasher,
+		db:        *redisDB,
+		hasher:    hasher,
+		redSync:   redSync,
+		mutexName: "cock",
 	}
 }
 
@@ -37,16 +46,15 @@ func (c RedisClient) StoreRefreshToken(
 	refreshToken string,
 ) error {
 	strUserID := strconv.FormatInt(int64(userID), 10)
-	backoff := redislock.LinearBackoff(100 * time.Millisecond)
-	lock, err := redislock.Obtain(ctx, c.db, strUserID, 100*time.Millisecond, &redislock.Options{
-		RetryStrategy: backoff,
-	})
-	if err != nil {
+
+	// mutexName := strUserID
+	mutex := c.redSync.NewMutex(c.mutexName)
+	if err := mutex.Lock(); err != nil {
 		return err
 	}
-	defer lock.Release(ctx)
+	defer mutex.Unlock()
 
-	err = c.db.Set(ctx, strUserID, refreshToken, time.Hour*48).Err()
+	err := c.db.Set(ctx, strUserID, refreshToken, time.Hour*48).Err()
 	if err != nil {
 		return err
 	}
@@ -59,16 +67,14 @@ func (c RedisClient) StoreRefreshTokenStringID(
 	userID string,
 	refreshToken string,
 ) error {
-	backoff := redislock.LinearBackoff(100 * time.Millisecond)
-	lock, err := redislock.Obtain(ctx, c.db, userID, 100*time.Millisecond, &redislock.Options{
-		RetryStrategy: backoff,
-	})
-	if err != nil {
+	// mutexName := userID
+	mutex := c.redSync.NewMutex(c.mutexName)
+	if err := mutex.Lock(); err != nil {
 		return err
 	}
-	defer lock.Release(ctx)
+	defer mutex.Unlock()
 
-	err = c.db.Set(ctx, userID, refreshToken, time.Hour*48).Err()
+	err := c.db.Set(ctx, userID, refreshToken, time.Hour*48).Err()
 	if err != nil {
 		return err
 	}
@@ -81,16 +87,14 @@ func (c RedisClient) DeleteRefreshToken(
 	userID int32,
 ) error {
 	strUserID := strconv.FormatInt(int64(userID), 10)
-	backoff := redislock.LinearBackoff(100 * time.Millisecond)
-	lock, err := redislock.Obtain(ctx, c.db, strUserID, 100*time.Millisecond, &redislock.Options{
-		RetryStrategy: backoff,
-	})
-	if err != nil {
+	// mutexName := strUserID
+	mutex := c.redSync.NewMutex(c.mutexName)
+	if err := mutex.Lock(); err != nil {
 		return err
 	}
-	defer lock.Release(ctx)
+	defer mutex.Unlock()
 
-	err = c.db.Del(ctx, strUserID).Err()
+	err := c.db.Del(ctx, strUserID).Err()
 	if err != nil {
 		return err
 	}
@@ -100,16 +104,14 @@ func (c RedisClient) DeleteRefreshTokenStringID(
 	ctx context.Context,
 	userID string,
 ) error {
-	backoff := redislock.LinearBackoff(100 * time.Millisecond)
-	lock, err := redislock.Obtain(ctx, c.db, userID, 100*time.Millisecond, &redislock.Options{
-		RetryStrategy: backoff,
-	})
-	if err != nil {
+	// mutexName := userID
+	mutex := c.redSync.NewMutex(c.mutexName)
+	if err := mutex.Lock(); err != nil {
 		return err
 	}
-	defer lock.Release(ctx)
+	defer mutex.Unlock()
 
-	err = c.db.Del(ctx, userID).Err()
+	err := c.db.Del(ctx, userID).Err()
 	if err != nil {
 		return err
 	}
@@ -124,14 +126,12 @@ func (c RedisClient) GetToken(
 	ctx context.Context,
 	userID string,
 ) (string, error) {
-	backoff := redislock.LinearBackoff(100 * time.Millisecond)
-	lock, err := redislock.Obtain(ctx, c.db, userID, 100*time.Millisecond, &redislock.Options{
-		RetryStrategy: backoff,
-	})
-	if err != nil {
+	// mutexName := userID
+	mutex := c.redSync.NewMutex(c.mutexName)
+	if err := mutex.Lock(); err != nil {
 		return "", err
 	}
-	defer lock.Release(ctx)
+	defer mutex.Unlock()
 
 	token, err := c.db.Get(ctx, userID).Result()
 	if err != nil {

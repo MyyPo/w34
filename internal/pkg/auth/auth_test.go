@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"testing"
@@ -35,9 +36,7 @@ func TestSignUpSignIn(t *testing.T) {
 		t.Errorf("failed to load config: %q", err)
 	}
 
-	// var signUpRefreshToken string
 	var signInRefreshToken string
-	// var refreshedRefrToken string
 
 	t.Run("Successful signup", func(t *testing.T) {
 
@@ -47,14 +46,13 @@ func TestSignUpSignIn(t *testing.T) {
 			Password: "stubhelloe21eqw121",
 		}
 
-		// res, err := psqlImpl.SignUp(context.Background(), req)
 		_, err := psqlImpl.SignUp(context.Background(), req)
 		if err != nil {
 			t.Errorf("unexpected error while trying to sign up: %q", err)
 		}
 
-		// signUpRefreshToken = res.GetTokens().GetRefreshToken()
 	})
+	time.Sleep(1 * time.Second)
 	t.Run("Try to signup with the taken username", func(t *testing.T) {
 		req := &authv1.SignUpRequest{
 			Username: "stubhello",
@@ -67,6 +65,7 @@ func TestSignUpSignIn(t *testing.T) {
 			t.Errorf("succesfully signed up with the taken username")
 		}
 	})
+	time.Sleep(1 * time.Second)
 	t.Run("Try to signin with created account", func(t *testing.T) {
 		req := &authv1.SignInRequest{
 			UnOrEmail: "stubhello",
@@ -79,6 +78,7 @@ func TestSignUpSignIn(t *testing.T) {
 		// save the token for the following tests
 		signInRefreshToken = res.GetTokens().GetRefreshToken()
 	})
+	time.Sleep(1 * time.Second)
 	t.Run("Refresh the token", func(t *testing.T) {
 		req := &authv1.RefreshTokensRequest{
 			RefreshToken: signInRefreshToken,
@@ -87,9 +87,8 @@ func TestSignUpSignIn(t *testing.T) {
 		if err != nil {
 			t.Errorf("refresh tokens error: %v", err)
 		}
-		// refreshedRefrToken = res.GetTokens().GetRefreshToken()
-
 	})
+	time.Sleep(1 * time.Second)
 	t.Run("Try to refresh token outside of db (first one generated in test)", func(t *testing.T) {
 		req := &authv1.RefreshTokensRequest{
 			RefreshToken: signInRefreshToken,
@@ -99,9 +98,10 @@ func TestSignUpSignIn(t *testing.T) {
 		if err == nil {
 			t.Errorf("expected error while trying to refresh with an old token")
 		}
-		t.Logf("err: %v", err)
-		// unexpectedRefreshToken := res.GetTokens().GetRefreshToken()
-		// t.Logf("end refresh token: %s", unexpectedRefreshToken)
+		if errors.Is(err, fmt.Errorf("used refresh token was provided")) {
+			t.Errorf("got unexpected error: %v", err)
+		}
+
 	})
 }
 

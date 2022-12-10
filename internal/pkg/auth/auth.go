@@ -155,7 +155,7 @@ func (s AuthServer) RefreshTokens(
 	}
 	// throw an error if the token isn't stored in redis
 	if currentTokenInDB != reqRefreshToken {
-		return nil, fmt.Errorf("invalid refresh token was provided")
+		return nil, fmt.Errorf("used refresh token was provided")
 	}
 
 	// delete the current refresh token stored in db for this account
