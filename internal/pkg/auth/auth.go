@@ -25,12 +25,14 @@ func NewAuthServer(
 	redisClient auth_redis.RedisClient,
 	validator validators.AuthValidator,
 	jwtManager JWTManager,
+	hasher hasher.Hasher,
 ) *AuthServer {
 	return &AuthServer{
 		repo:        repo,
 		redisClient: redisClient,
 		validator:   validator,
 		jwtManager:  jwtManager,
+		hasher:      hasher,
 		us:          authv1.UnimplementedAuthServiceServer{},
 	}
 }

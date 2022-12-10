@@ -8,20 +8,17 @@ import (
 	"github.com/go-redsync/redsync/v4"
 	"github.com/go-redsync/redsync/v4/redis/goredis/v9"
 
-	"github.com/MyyPo/w34.Go/internal/pkg/auth/hasher"
 	"github.com/go-redis/redis/v9"
 )
 
 type RedisClient struct {
 	db        redis.Client
-	hasher    hasher.Hasher
 	redSync   *redsync.Redsync
 	mutexName string
 }
 
 func NewRedisClient(
 	address, password string,
-	hasher hasher.Hasher,
 ) *RedisClient {
 	redisDB := redis.NewClient(&redis.Options{
 		Addr:     address,
@@ -34,9 +31,8 @@ func NewRedisClient(
 
 	return &RedisClient{
 		db:        *redisDB,
-		hasher:    hasher,
 		redSync:   redSync,
-		mutexName: "cock",
+		mutexName: "global",
 	}
 }
 

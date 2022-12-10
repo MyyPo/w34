@@ -122,9 +122,9 @@ func setupPsqlRedis(t *testing.T) *AuthServer {
 	if err != nil {
 		log.Fatalf("failed to connect to db for testing: %q", err)
 	}
-	psqlRepo := auth_psql_adapter.NewPSQLRepository(psqlDB)
 	hasher := hasher.NewHasher()
-	redisClient := auth_redis.NewRedisClient("localhost:6379", "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81", *hasher)
+	psqlRepo := auth_psql_adapter.NewPSQLRepository(psqlDB)
+	redisClient := auth_redis.NewRedisClient("localhost:6379", "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81")
 	authValidator, err := validators.NewAuthValidator(60, "^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$")
 	if err != nil {
 		log.Fatalf("failed to initialize validator for testing: %q", err)
@@ -136,5 +136,5 @@ func setupPsqlRedis(t *testing.T) *AuthServer {
 
 	// remove all affected database rows after the tests
 	t.Cleanup(func() { removeRows(psqlDB) })
-	return NewAuthServer(psqlRepo, *redisClient, *authValidator, *jwtManager)
+	return NewAuthServer(psqlRepo, *redisClient, *authValidator, *jwtManager, *hasher)
 }

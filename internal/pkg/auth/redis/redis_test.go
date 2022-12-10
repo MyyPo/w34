@@ -4,14 +4,11 @@ import (
 	"context"
 	"testing"
 	"time"
-
-	"github.com/MyyPo/w34.Go/internal/pkg/auth/hasher"
 )
 
 func TestRedisClient(t *testing.T) {
 	ctx := context.Background()
-	hasher := hasher.NewHasher()
-	redisClient := NewRedisClient("localhost:6379", "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81", *hasher)
+	redisClient := NewRedisClient("localhost:6379", "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81")
 
 	const userId int32 = 9999
 
