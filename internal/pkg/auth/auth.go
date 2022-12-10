@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	authv1 "github.com/MyyPo/w34.Go/gen/go/auth/v1"
@@ -145,9 +146,12 @@ func (s AuthServer) RefreshTokens(
 	userID := tokenClaims.Subject
 
 	// delete the valid refresh token stored in db for this account
-	err = s.redisClient.DeleteRefreshTokenStringID(ctx, userID)
+	deletedNum, err := s.redisClient.DeleteRefreshTokenStringID(ctx, userID)
 	if err != nil {
 		return nil, err
+	}
+	if deletedNum == 0 {
+		return nil, fmt.Errorf("invalid refresh token was provided")
 	}
 
 	// create new tokens

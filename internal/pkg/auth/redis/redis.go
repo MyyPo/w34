@@ -72,11 +72,11 @@ func (c RedisClient) DeleteRefreshToken(
 func (c RedisClient) DeleteRefreshTokenStringID(
 	ctx context.Context,
 	userID string,
-) error {
-	err := c.db.Del(ctx, userID).Err()
+) (int64, error) {
+	res, err := c.db.Del(ctx, userID).Result()
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return nil
+	return res, nil
 }
