@@ -107,7 +107,10 @@ func (s AuthServer) SignIn(
 	retrievedUserID := userIDAndPassword.UserID
 
 	// delete the valid refresh token stored in db for this account, if it exists
-	s.redisClient.DeleteRefreshToken(ctx, retrievedUserID)
+	err = s.redisClient.DeleteRefreshToken(ctx, retrievedUserID)
+	if err != nil {
+		return nil, err
+	}
 
 	accessToken, err := s.jwtManager.GenerateAccessToken(retrievedUserID)
 	if err != nil {
@@ -137,21 +140,28 @@ func (s AuthServer) RefreshTokens(
 	req *authv1.RefreshTokensRequest,
 ) (*authv1.RefreshTokensResponse, error) {
 
-	oldRefreshToken := req.GetRefreshToken()
-	tokenClaims, err := s.jwtManager.ValidateJwtExtractClaims(oldRefreshToken, s.jwtManager.pathToRefreshPublicSignature)
+	reqRefreshToken := req.GetRefreshToken()
+	tokenClaims, err := s.jwtManager.ValidateJwtExtractClaims(reqRefreshToken, s.jwtManager.pathToRefreshPublicSignature)
 	if err != nil {
 		return nil, err
 	}
 
 	userID := tokenClaims.Subject
 
-	// delete the valid refresh token stored in db for this account
-	deletedNum, err := s.redisClient.DeleteRefreshTokenStringID(ctx, userID)
+	// lookup if this token was really in the database
+	currentTokenInDB, err := s.redisClient.GetToken(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
-	if deletedNum == 0 {
+	// throw an error if the token isn't stored in redis
+	if currentTokenInDB != reqRefreshToken {
 		return nil, fmt.Errorf("invalid refresh token was provided")
+	}
+
+	// delete the current refresh token stored in db for this account
+	err = s.redisClient.DeleteRefreshTokenStringID(ctx, userID)
+	if err != nil {
+		return nil, err
 	}
 
 	// create new tokens

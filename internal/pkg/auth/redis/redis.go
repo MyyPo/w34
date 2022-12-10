@@ -2,6 +2,7 @@ package auth_redis
 
 import (
 	"context"
+	"github.com/bsm/redislock"
 	"strconv"
 	"time"
 
@@ -36,7 +37,16 @@ func (c RedisClient) StoreRefreshToken(
 	refreshToken string,
 ) error {
 	strUserID := strconv.FormatInt(int64(userID), 10)
-	err := c.db.Set(ctx, strUserID, refreshToken, time.Hour*48).Err()
+	backoff := redislock.LinearBackoff(100 * time.Millisecond)
+	lock, err := redislock.Obtain(ctx, c.db, strUserID, 100*time.Millisecond, &redislock.Options{
+		RetryStrategy: backoff,
+	})
+	if err != nil {
+		return err
+	}
+	defer lock.Release(ctx)
+
+	err = c.db.Set(ctx, strUserID, refreshToken, time.Hour*48).Err()
 	if err != nil {
 		return err
 	}
@@ -49,7 +59,16 @@ func (c RedisClient) StoreRefreshTokenStringID(
 	userID string,
 	refreshToken string,
 ) error {
-	err := c.db.Set(ctx, userID, refreshToken, time.Hour*48).Err()
+	backoff := redislock.LinearBackoff(100 * time.Millisecond)
+	lock, err := redislock.Obtain(ctx, c.db, userID, 100*time.Millisecond, &redislock.Options{
+		RetryStrategy: backoff,
+	})
+	if err != nil {
+		return err
+	}
+	defer lock.Release(ctx)
+
+	err = c.db.Set(ctx, userID, refreshToken, time.Hour*48).Err()
 	if err != nil {
 		return err
 	}
@@ -62,21 +81,62 @@ func (c RedisClient) DeleteRefreshToken(
 	userID int32,
 ) error {
 	strUserID := strconv.FormatInt(int64(userID), 10)
-	err := c.db.Del(ctx, strUserID).Err()
+	backoff := redislock.LinearBackoff(100 * time.Millisecond)
+	lock, err := redislock.Obtain(ctx, c.db, strUserID, 100*time.Millisecond, &redislock.Options{
+		RetryStrategy: backoff,
+	})
 	if err != nil {
 		return err
 	}
+	defer lock.Release(ctx)
 
+	err = c.db.Del(ctx, strUserID).Err()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 func (c RedisClient) DeleteRefreshTokenStringID(
 	ctx context.Context,
 	userID string,
-) (int64, error) {
-	res, err := c.db.Del(ctx, userID).Result()
+) error {
+	backoff := redislock.LinearBackoff(100 * time.Millisecond)
+	lock, err := redislock.Obtain(ctx, c.db, userID, 100*time.Millisecond, &redislock.Options{
+		RetryStrategy: backoff,
+	})
 	if err != nil {
-		return 0, err
+		return err
+	}
+	defer lock.Release(ctx)
+
+	err = c.db.Del(ctx, userID).Err()
+	if err != nil {
+		return err
 	}
 
-	return res, nil
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c RedisClient) GetToken(
+	ctx context.Context,
+	userID string,
+) (string, error) {
+	backoff := redislock.LinearBackoff(100 * time.Millisecond)
+	lock, err := redislock.Obtain(ctx, c.db, userID, 100*time.Millisecond, &redislock.Options{
+		RetryStrategy: backoff,
+	})
+	if err != nil {
+		return "", err
+	}
+	defer lock.Release(ctx)
+
+	token, err := c.db.Get(ctx, userID).Result()
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 }

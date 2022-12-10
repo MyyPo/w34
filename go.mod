@@ -3,9 +3,10 @@ module github.com/MyyPo/w34.Go
 go 1.19
 
 require (
+	github.com/bsm/redislock v0.8.2
 	github.com/go-jet/jet/v2 v2.9.0
+	github.com/go-redis/redis/v9 v9.0.0-rc.2
 	github.com/golang-jwt/jwt/v4 v4.4.3
-	github.com/google/uuid v1.1.2
 	github.com/lib/pq v1.10.7
 	github.com/spf13/viper v1.14.0
 	github.com/wagslane/go-password-validator v0.3.0
@@ -19,8 +20,8 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/go-redis/redis/v9 v9.0.0-rc.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/google/uuid v1.1.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
