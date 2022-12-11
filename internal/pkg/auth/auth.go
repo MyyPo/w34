@@ -75,7 +75,12 @@ func (s AuthServer) SignUp(
 		return nil, err
 	}
 
-	err = s.redisClient.StoreRefreshToken(ctx, createdUserID, refreshToken)
+	hashedRefreshToken, err := s.hasher.HashSecret(refreshToken)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.redisClient.StoreRefreshToken(ctx, createdUserID, hashedRefreshToken)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +107,7 @@ func (s AuthServer) SignIn(
 	hashedUserPassword := userIDAndPassword.Password
 
 	// compared password from request with hash returned from database
-	if err := s.hasher.CompareWithSecret(reqPassword, hashedUserPassword); err != nil {
+	if err := s.hasher.CompareWithSecret(hashedUserPassword, reqPassword); err != nil {
 		return nil, err
 	}
 
@@ -124,7 +129,12 @@ func (s AuthServer) SignIn(
 		return nil, err
 	}
 
-	err = s.redisClient.StoreRefreshToken(ctx, retrievedUserID, refreshToken)
+	hashedRefreshToken, err := s.hasher.HashSecret(refreshToken)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.redisClient.StoreRefreshToken(ctx, retrievedUserID, hashedRefreshToken)
 	if err != nil {
 		return nil, err
 	}
@@ -150,13 +160,13 @@ func (s AuthServer) RefreshTokens(
 
 	userID := tokenClaims.Subject
 
-	// lookup if this token was really in the database
+	// lookup if this refresh token was really in the database
 	currentTokenInDB, err := s.redisClient.GetToken(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 	// throw an error if the token isn't stored in redis
-	if currentTokenInDB != reqRefreshToken {
+	if err := s.hasher.CompareWithSecret(currentTokenInDB, reqRefreshToken); err != nil {
 		return nil, fmt.Errorf("used refresh token was provided")
 	}
 
@@ -178,7 +188,12 @@ func (s AuthServer) RefreshTokens(
 		return nil, err
 	}
 
-	err = s.redisClient.StoreRefreshTokenStringID(ctx, userID, newRefreshToken)
+	newHashedRefreshToken, err := s.hasher.HashSecret(newRefreshToken)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.redisClient.StoreRefreshTokenStringID(ctx, userID, newHashedRefreshToken)
 	if err != nil {
 		return nil, err
 	}

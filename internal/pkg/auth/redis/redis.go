@@ -39,7 +39,7 @@ func NewRedisClient(
 func (c RedisClient) StoreRefreshToken(
 	ctx context.Context,
 	userID int32,
-	refreshToken string,
+	hashedRefreshToken string,
 ) error {
 	strUserID := strconv.FormatInt(int64(userID), 10)
 
@@ -50,7 +50,7 @@ func (c RedisClient) StoreRefreshToken(
 	}
 	defer mutex.Unlock()
 
-	err := c.db.Set(ctx, strUserID, refreshToken, time.Hour*48).Err()
+	err := c.db.Set(ctx, strUserID, hashedRefreshToken, time.Hour*48).Err()
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (c RedisClient) StoreRefreshToken(
 func (c RedisClient) StoreRefreshTokenStringID(
 	ctx context.Context,
 	userID string,
-	refreshToken string,
+	hashedRefreshToken string,
 ) error {
 	// mutexName := userID
 	mutex := c.redSync.NewMutex(c.mutexName)
@@ -70,7 +70,7 @@ func (c RedisClient) StoreRefreshTokenStringID(
 	}
 	defer mutex.Unlock()
 
-	err := c.db.Set(ctx, userID, refreshToken, time.Hour*48).Err()
+	err := c.db.Set(ctx, userID, hashedRefreshToken, time.Hour*48).Err()
 	if err != nil {
 		return err
 	}
@@ -112,9 +112,6 @@ func (c RedisClient) DeleteRefreshTokenStringID(
 		return err
 	}
 
-	if err != nil {
-		return err
-	}
 	return nil
 }
 

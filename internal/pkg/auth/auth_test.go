@@ -37,6 +37,7 @@ func TestSignUpSignIn(t *testing.T) {
 	}
 
 	var signInRefreshToken string
+	var refreshedRefrToken string
 
 	t.Run("Successful signup", func(t *testing.T) {
 
@@ -46,10 +47,11 @@ func TestSignUpSignIn(t *testing.T) {
 			Password: "stubhelloe21eqw121",
 		}
 
-		_, err := psqlImpl.SignUp(context.Background(), req)
+		res, err := psqlImpl.SignUp(context.Background(), req)
 		if err != nil {
 			t.Errorf("unexpected error while trying to sign up: %q", err)
 		}
+		t.Logf(res.GetTokens().GetRefreshToken())
 
 	})
 	time.Sleep(1 * time.Second)
@@ -77,30 +79,46 @@ func TestSignUpSignIn(t *testing.T) {
 		}
 		// save the token for the following tests
 		signInRefreshToken = res.GetTokens().GetRefreshToken()
+		t.Logf(signInRefreshToken)
 	})
 	time.Sleep(1 * time.Second)
 	t.Run("Refresh the token", func(t *testing.T) {
 		req := &authv1.RefreshTokensRequest{
 			RefreshToken: signInRefreshToken,
 		}
-		_, err := psqlImpl.RefreshTokens(context.Background(), req)
+		res, err := psqlImpl.RefreshTokens(context.Background(), req)
 		if err != nil {
 			t.Errorf("refresh tokens error: %v", err)
 		}
+		refreshedRefrToken = res.GetTokens().GetRefreshToken()
+		t.Logf(refreshedRefrToken)
 	})
 	time.Sleep(1 * time.Second)
-	t.Run("Try to refresh token outside of db (first one generated in test)", func(t *testing.T) {
+	t.Run("Try to refresh token outside of db (one generated with sign in test)", func(t *testing.T) {
 		req := &authv1.RefreshTokensRequest{
 			RefreshToken: signInRefreshToken,
 		}
 		// res, err := psqlImpl.RefreshTokens(context.Background(), req)
-		_, err := psqlImpl.RefreshTokens(context.Background(), req)
+		res, err := psqlImpl.RefreshTokens(context.Background(), req)
 		if err == nil {
 			t.Errorf("expected error while trying to refresh with an old token")
+		} else {
+			if !errors.Is(err, fmt.Errorf("used refresh token was provided")) {
+				t.Errorf("got unexpected error: %v", err)
+			}
 		}
-		if errors.Is(err, fmt.Errorf("used refresh token was provided")) {
-			t.Errorf("got unexpected error: %v", err)
+		t.Logf(res.GetTokens().GetRefreshToken())
+	})
+	time.Sleep(1 * time.Second)
+	t.Run("Refresh with a token acquired from refresh method", func(t *testing.T) {
+		req := &authv1.RefreshTokensRequest{
+			RefreshToken: refreshedRefrToken,
 		}
+		res, err := psqlImpl.RefreshTokens(context.Background(), req)
+		if err != nil {
+			t.Errorf("refresh tokens error: %v", err)
+		}
+		t.Logf(res.GetTokens().GetRefreshToken())
 
 	})
 }

@@ -21,6 +21,9 @@ tasks:
   tvalidators:
     cmds:
       - go test ./internal/pkg/validators -v
+  thasher:
+    cmds:
+      - go test ./internal/pkg/auth/hasher -v
   tauthredis:
     cmds:
       - go test ./internal/pkg/auth/redis -v

@@ -18,7 +18,6 @@ func (h Hasher) HashSecret(secret string) (string, error) {
 	return string(hashed), nil
 }
 
-func (h Hasher) CompareWithSecret(secret, hash string) error {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(secret))
-	return err
+func (h Hasher) CompareWithSecret(hash, secret string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(secret))
 }
