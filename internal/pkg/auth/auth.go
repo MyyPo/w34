@@ -166,6 +166,7 @@ func (s AuthServer) RefreshTokens(
 		return nil, err
 	}
 	// throw an error if the token isn't stored in redis
+	fmt.Println("From Compare: ", currentTokenInDB)
 	if err := s.hasher.CompareWithSecret(currentTokenInDB, reqRefreshToken); err != nil {
 		return nil, fmt.Errorf("used refresh token was provided")
 	}
