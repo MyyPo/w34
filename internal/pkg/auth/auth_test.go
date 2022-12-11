@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"log"
 	"testing"
@@ -105,10 +104,6 @@ func TestSignUpSignIn(t *testing.T) {
 		_, err := psqlImpl.RefreshTokens(context.Background(), req)
 		if err == nil {
 			t.Errorf("expected error while trying to refresh with an old token")
-		} else {
-			if !errors.Is(err, fmt.Errorf("used refresh token was provided")) {
-				t.Errorf("got unexpected error: %v", err)
-			}
 		}
 		// t.Logf(res.GetTokens().GetRefreshToken())
 	})
@@ -122,16 +117,6 @@ func TestSignUpSignIn(t *testing.T) {
 			t.Errorf("refresh tokens error: %v", err)
 		}
 		// t.Logf(res.GetTokens().GetRefreshToken())
-
-	})
-	t.Run("Try to refresh with 3rd party token", func(t *testing.T) {
-		req := &authv1.RefreshTokensRequest{
-			RefreshToken: signInRefreshToken,
-		}
-		_, err := psqlImpl.RefreshTokens(context.Background(), req)
-		if err == nil {
-			t.Errorf("lmao even: %v", err)
-		}
 
 	})
 }

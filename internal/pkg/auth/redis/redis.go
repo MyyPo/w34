@@ -2,7 +2,6 @@ package auth_redis
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -51,8 +50,6 @@ func (c RedisClient) StoreRefreshToken(
 	}
 	defer mutex.Unlock()
 
-	fmt.Println("From StoreRefreshToken", hashedRefreshToken)
-
 	err := c.db.Set(ctx, strUserID, hashedRefreshToken, time.Hour*48).Err()
 	if err != nil {
 		return err
@@ -72,8 +69,6 @@ func (c RedisClient) StoreRefreshTokenStringID(
 		return err
 	}
 	defer mutex.Unlock()
-
-	fmt.Println("StoreRefreshTokenStringID", hashedRefreshToken)
 
 	err := c.db.Set(ctx, userID, hashedRefreshToken, time.Hour*48).Err()
 	if err != nil {
@@ -132,7 +127,6 @@ func (c RedisClient) GetToken(
 	defer mutex.Unlock()
 
 	token, err := c.db.Get(ctx, userID).Result()
-	fmt.Println("From GetToken: ", token)
 	if err != nil {
 		return "", err
 	}

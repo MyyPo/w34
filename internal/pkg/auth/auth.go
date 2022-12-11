@@ -75,12 +75,12 @@ func (s AuthServer) SignUp(
 		return nil, err
 	}
 
-	hashedRefreshToken, err := s.hasher.HashSecret(refreshToken)
-	if err != nil {
-		return nil, err
-	}
+	// hashedRefreshToken, err := s.hasher.HashSecret(refreshToken)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	err = s.redisClient.StoreRefreshToken(ctx, createdUserID, hashedRefreshToken)
+	err = s.redisClient.StoreRefreshToken(ctx, createdUserID, refreshToken)
 	if err != nil {
 		return nil, err
 	}
@@ -129,12 +129,12 @@ func (s AuthServer) SignIn(
 		return nil, err
 	}
 
-	hashedRefreshToken, err := s.hasher.HashSecret(refreshToken)
-	if err != nil {
-		return nil, err
-	}
+	// hashedRefreshToken, err := s.hasher.HashSecret(refreshToken)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	err = s.redisClient.StoreRefreshToken(ctx, retrievedUserID, hashedRefreshToken)
+	err = s.redisClient.StoreRefreshToken(ctx, retrievedUserID, refreshToken)
 	if err != nil {
 		return nil, err
 	}
@@ -166,10 +166,13 @@ func (s AuthServer) RefreshTokens(
 		return nil, err
 	}
 	// throw an error if the token isn't stored in redis
-	fmt.Println("From Compare: ", currentTokenInDB)
-	if err := s.hasher.CompareWithSecret(currentTokenInDB, reqRefreshToken); err != nil {
+	if currentTokenInDB != reqRefreshToken {
 		return nil, fmt.Errorf("used refresh token was provided")
 	}
+
+	// if err := s.hasher.CompareWithSecret(currentTokenInDB, reqRefreshToken); err != nil {
+	// 	return nil, fmt.Errorf("used refresh token was provided")
+	// }
 
 	// delete the current refresh token stored in db for this account
 	err = s.redisClient.DeleteRefreshTokenStringID(ctx, userID)
@@ -189,12 +192,12 @@ func (s AuthServer) RefreshTokens(
 		return nil, err
 	}
 
-	newHashedRefreshToken, err := s.hasher.HashSecret(newRefreshToken)
-	if err != nil {
-		return nil, err
-	}
+	// newHashedRefreshToken, err := s.hasher.HashSecret(newRefreshToken)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	err = s.redisClient.StoreRefreshTokenStringID(ctx, userID, newHashedRefreshToken)
+	err = s.redisClient.StoreRefreshTokenStringID(ctx, userID, newRefreshToken)
 	if err != nil {
 		return nil, err
 	}
