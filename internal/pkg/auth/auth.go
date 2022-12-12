@@ -7,6 +7,7 @@ import (
 
 	authv1 "github.com/MyyPo/w34.Go/gen/go/auth/v1"
 	"github.com/MyyPo/w34.Go/internal/pkg/auth/hasher"
+	"github.com/MyyPo/w34.Go/internal/pkg/auth/jwt"
 	"github.com/MyyPo/w34.Go/internal/pkg/auth/redis"
 	"github.com/MyyPo/w34.Go/internal/pkg/auth/validators"
 )
@@ -15,7 +16,7 @@ type AuthServer struct {
 	repo        Repository
 	redisClient auth_redis.RedisClient
 	validator   validators.AuthValidator
-	jwtManager  JWTManager
+	jwtManager  jwt.JWTManager
 	hasher      hasher.Hasher
 	us          authv1.UnimplementedAuthServiceServer
 }
@@ -24,7 +25,7 @@ func NewAuthServer(
 	repo Repository,
 	redisClient auth_redis.RedisClient,
 	validator validators.AuthValidator,
-	jwtManager JWTManager,
+	jwtManager jwt.JWTManager,
 	hasher hasher.Hasher,
 ) *AuthServer {
 	return &AuthServer{
@@ -123,7 +124,6 @@ func (s AuthServer) SignIn(
 	if err != nil {
 		return nil, err
 	}
-
 	refreshToken, err := s.jwtManager.GenerateRefreshToken(retrievedUserID)
 	if err != nil {
 		return nil, err
@@ -153,7 +153,7 @@ func (s AuthServer) RefreshTokens(
 ) (*authv1.RefreshTokensResponse, error) {
 
 	reqRefreshToken := req.GetRefreshToken()
-	tokenClaims, err := s.jwtManager.ValidateJwtExtractClaims(reqRefreshToken, s.jwtManager.pathToRefreshPublicSignature)
+	tokenClaims, err := s.jwtManager.ValidateJwtExtractClaims(reqRefreshToken, s.jwtManager.PathToRefreshPublicSignature)
 	if err != nil {
 		return nil, err
 	}

@@ -1,4 +1,4 @@
-package auth
+package jwt
 
 import (
 	"testing"
@@ -6,8 +6,8 @@ import (
 )
 
 func TestJWT(t *testing.T) {
-	jwtManager := NewJWTManager("../../../configs/rsa", "../../../configs/rsa.pub",
-		"../../../configs/refresh_rsa", "../../../configs/refresh_rsa.pub",
+	jwtManager := NewJWTManager("../../../../configs/rsa", "../../../../configs/rsa.pub",
+		"../../../../configs/refresh_rsa", "../../../../configs/refresh_rsa.pub",
 		time.Minute*10, time.Hour*48)
 
 	t.Run("Create an access token, then validate it", func(t *testing.T) {
@@ -50,7 +50,7 @@ func TestJWT(t *testing.T) {
 			t.Errorf("jwt error: %q", err)
 		}
 
-		gotClaims, err := jwtManager.ValidateJwtExtractClaims(gotJWT, jwtManager.pathToRefreshPublicSignature)
+		gotClaims, err := jwtManager.ValidateJwtExtractClaims(gotJWT, jwtManager.PathToRefreshPublicSignature)
 		if err != nil {
 			t.Errorf("failed to validate valid token: %q", err)
 		}

@@ -13,6 +13,7 @@ import (
 	t "github.com/MyyPo/w34.Go/gen/psql/auth/public/table"
 	"github.com/MyyPo/w34.Go/internal/adapters/auth/psql"
 	"github.com/MyyPo/w34.Go/internal/pkg/auth/hasher"
+	"github.com/MyyPo/w34.Go/internal/pkg/auth/jwt"
 	auth_redis "github.com/MyyPo/w34.Go/internal/pkg/auth/redis"
 	"github.com/MyyPo/w34.Go/internal/pkg/auth/validators"
 	. "github.com/go-jet/jet/v2/postgres"
@@ -146,7 +147,7 @@ func setupPsqlRedis(t *testing.T) *AuthServer {
 		log.Fatalf("failed to initialize validator for testing: %q", err)
 	}
 
-	jwtManager := NewJWTManager("../../../configs/rsa", "../../../configs/rsa.pub",
+	jwtManager := jwt.NewJWTManager("../../../configs/rsa", "../../../configs/rsa.pub",
 		"../../../configs/refresh_rsa", "../../../configs/refresh_rsa.pub",
 		time.Minute*10, time.Hour*48)
 

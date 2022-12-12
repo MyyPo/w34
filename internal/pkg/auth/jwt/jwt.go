@@ -1,4 +1,4 @@
-package auth
+package jwt
 
 import (
 	"crypto/rsa"
@@ -14,7 +14,7 @@ type JWTManager struct {
 	pathToAccessPrivateSignature  string
 	pathToAccessPublicSignature   string
 	pathToRefreshPrivateSignature string
-	pathToRefreshPublicSignature  string
+	PathToRefreshPublicSignature  string
 	accessTokenDuraion            time.Duration
 	refreshTokenDuration          time.Duration
 }
@@ -28,7 +28,7 @@ func NewJWTManager(
 		pathToAccessPrivateSignature:  pathToAccessPrivateSignature,
 		pathToAccessPublicSignature:   pathToAccessPublicSignature,
 		pathToRefreshPrivateSignature: pathToRefreshPrivateSignature,
-		pathToRefreshPublicSignature:  pathToRefreshPublicSignature,
+		PathToRefreshPublicSignature:  pathToRefreshPublicSignature,
 		accessTokenDuraion:            accessTokenDuration,
 		refreshTokenDuration:          refreshTokenDuration,
 	}
