@@ -12,9 +12,12 @@ RUN go get -d -v ./...
 
 RUN go install -v ./...
 
-#Setup auto-recompilation for dev stage
+# Setup auto-recompilation for dev stage
 RUN go get github.com/githubnemo/CompileDaemon
 RUN go install github.com/githubnemo/CompileDaemon
+
+# Install gotask to run taskfiles.yaml
+RUN go install github.com/go-task/task/v3/cmd/task@latest
 
 # without polling live reload DOESN'T WORK with new docker engine
 ENTRYPOINT CompileDaemon -polling --build="go build -a -installsuffix cgo -o main ./cmd/server" --command=./main

@@ -141,7 +141,8 @@ func setupPsqlRedis(t *testing.T) *AuthServer {
 	}
 	hasher := hasher.NewHasher()
 	psqlRepo := auth_psql_adapter.NewPSQLRepository(psqlDB)
-	redisClient := auth_redis.NewRedisClient("localhost:6379", "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81")
+	// redisClient := auth_redis.NewRedisClient("localhost:6379", "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81")
+	redisClient := auth_redis.NewRedisClient("host.docker.internal:6379", "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81")
 	authValidator, err := validators.NewAuthValidator(60, "^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$")
 	if err != nil {
 		log.Fatalf("failed to initialize validator for testing: %q", err)

@@ -3,9 +3,17 @@ package jwt
 import (
 	"testing"
 	"time"
+	// "github.com/MyyPo/w34.Go/configs"
 )
 
 func TestJWT(t *testing.T) {
+	// conf, err := configs.NewConfig("$APP/app/configs")
+	// if err != nil {
+	// 	t.Errorf("err: %v", err)
+	// }
+
+	// t.Logf("current config: %v", conf)
+
 	jwtManager := NewJWTManager("../../../../configs/rsa", "../../../../configs/rsa.pub",
 		"../../../../configs/refresh_rsa", "../../../../configs/refresh_rsa.pub",
 		time.Minute*10, time.Hour*48)
