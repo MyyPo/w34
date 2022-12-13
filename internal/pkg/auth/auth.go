@@ -8,13 +8,13 @@ import (
 	authv1 "github.com/MyyPo/w34.Go/gen/go/auth/v1"
 	"github.com/MyyPo/w34.Go/internal/pkg/auth/hasher"
 	"github.com/MyyPo/w34.Go/internal/pkg/auth/jwt"
-	"github.com/MyyPo/w34.Go/internal/pkg/auth/redis"
 	"github.com/MyyPo/w34.Go/internal/pkg/auth/validators"
+	"github.com/MyyPo/w34.Go/internal/statestore"
 )
 
 type AuthServer struct {
 	repo        Repository
-	redisClient auth_redis.RedisClient
+	redisClient statestore.RedisClient
 	validator   validators.AuthValidator
 	jwtManager  jwt.JWTManager
 	hasher      hasher.Hasher
@@ -23,7 +23,7 @@ type AuthServer struct {
 
 func NewAuthServer(
 	repo Repository,
-	redisClient auth_redis.RedisClient,
+	redisClient statestore.RedisClient,
 	validator validators.AuthValidator,
 	jwtManager jwt.JWTManager,
 	hasher hasher.Hasher,

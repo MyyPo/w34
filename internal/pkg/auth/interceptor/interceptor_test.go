@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/MyyPo/w34.Go/internal/pkg/auth/jwt"
-	auth_redis "github.com/MyyPo/w34.Go/internal/pkg/auth/redis"
+	"github.com/MyyPo/w34.Go/internal/statestore"
 )
 
 func TestInterceptor(t *testing.T) {
@@ -17,7 +17,7 @@ func TestInterceptor(t *testing.T) {
 		t.Errorf("failed to initialize jwtManager: %v", err)
 	}
 
-	redisClient := auth_redis.NewRedisClient("host.docker.internal:6379", "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81")
+	redisClient := statestore.NewRedisClient("host.docker.internal:6379", "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81", 48*time.Hour)
 
 	roles := map[string][]string{
 		"201": {"admin"},

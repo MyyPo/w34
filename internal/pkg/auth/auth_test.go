@@ -14,8 +14,8 @@ import (
 	"github.com/MyyPo/w34.Go/internal/adapters/auth/psql"
 	"github.com/MyyPo/w34.Go/internal/pkg/auth/hasher"
 	"github.com/MyyPo/w34.Go/internal/pkg/auth/jwt"
-	auth_redis "github.com/MyyPo/w34.Go/internal/pkg/auth/redis"
 	"github.com/MyyPo/w34.Go/internal/pkg/auth/validators"
+	"github.com/MyyPo/w34.Go/internal/statestore"
 	. "github.com/go-jet/jet/v2/postgres"
 	_ "github.com/lib/pq"
 )
@@ -25,8 +25,7 @@ const (
 	port     = 1234
 	user     = "spuser"
 	password = "SPuser96"
-	// dbname   = "postgres"
-	dbname = "auth"
+	dbname   = "auth"
 )
 
 func TestSignUpSignIn(t *testing.T) {
@@ -47,7 +46,6 @@ func TestSignUpSignIn(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error while trying to sign up: %q", err)
 		}
-		// t.Logf("Signup token: %s", res.GetTokens().GetRefreshToken())
 
 	})
 	time.Sleep(1 * time.Second)
@@ -75,34 +73,29 @@ func TestSignUpSignIn(t *testing.T) {
 		}
 		// save the token for the following tests
 		signInRefreshToken = res.GetTokens().GetRefreshToken()
-		// t.Logf("signInToken: %s", signInRefreshToken)
-		// t.Logf("signIn token: %s", signInRefreshToken)
+
 	})
 	time.Sleep(1 * time.Second)
 	t.Run("Refresh the token", func(t *testing.T) {
 		req := &authv1.RefreshTokensRequest{
 			RefreshToken: signInRefreshToken,
 		}
-		// t.Logf("signInToken: %s", signInRefreshToken)
 		res, err := psqlImpl.RefreshTokens(context.Background(), req)
 		if err != nil {
 			t.Errorf("refresh tokens error: %v", err)
 		}
 		refreshedRefrToken = res.GetTokens().GetRefreshToken()
-		// t.Logf("token after refresh: %s", refreshedRefrToken)
 	})
 	time.Sleep(1 * time.Second)
 	t.Run("Try to refresh token outside of db (one generated with sign in test)", func(t *testing.T) {
 		req := &authv1.RefreshTokensRequest{
 			RefreshToken: signInRefreshToken,
 		}
-		// t.Logf("signInToken: %s", signInRefreshToken)
-		// res, err := psqlImpl.RefreshTokens(context.Background(), req)
+
 		_, err := psqlImpl.RefreshTokens(context.Background(), req)
 		if err == nil {
 			t.Errorf("expected error while trying to refresh with an old token")
 		}
-		// t.Logf(res.GetTokens().GetRefreshToken())
 	})
 	time.Sleep(1 * time.Second)
 	t.Run("Refresh with a token acquired from refresh method", func(t *testing.T) {
@@ -113,7 +106,6 @@ func TestSignUpSignIn(t *testing.T) {
 		if err != nil {
 			t.Errorf("refresh tokens error: %v", err)
 		}
-		// t.Logf(res.GetTokens().GetRefreshToken())
 
 	})
 }
@@ -142,8 +134,7 @@ func setupPsqlRedis(t *testing.T) *AuthServer {
 	}
 	hasher := hasher.NewHasher()
 	psqlRepo := auth_psql_adapter.NewPSQLRepository(psqlDB)
-	// redisClient := auth_redis.NewRedisClient("localhost:6379", "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81")
-	redisClient := auth_redis.NewRedisClient("host.docker.internal:6379", "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81")
+	redisClient := statestore.NewRedisClient("host.docker.internal:6379", "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81", config.RefreshTokenDuration)
 	authValidator, err := validators.NewAuthValidator(60, "^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$")
 	if err != nil {
 		log.Fatalf("failed to initialize validator for testing: %q", err)

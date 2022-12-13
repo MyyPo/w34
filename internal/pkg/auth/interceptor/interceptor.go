@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/MyyPo/w34.Go/internal/pkg/auth/jwt"
-	auth_redis "github.com/MyyPo/w34.Go/internal/pkg/auth/redis"
+	"github.com/MyyPo/w34.Go/internal/statestore"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -13,13 +13,13 @@ import (
 
 type Interceptor struct {
 	jwtManager      jwt.JWTManager
-	redisClient     auth_redis.RedisClient
+	redisClient     statestore.RedisClient
 	accessibleRoles map[string][]string
 }
 
 func NewAuthInterceptor(
 	jwtManager jwt.JWTManager,
-	redisClient auth_redis.RedisClient,
+	redisClient statestore.RedisClient,
 	accessibleRoles map[string][]string,
 ) Interceptor {
 

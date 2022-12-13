@@ -1,4 +1,4 @@
-package auth_redis
+package statestore
 
 import (
 	"context"
@@ -12,13 +12,15 @@ import (
 )
 
 type RedisClient struct {
-	db        redis.Client
-	redSync   *redsync.Redsync
-	mutexName string
+	db            redis.Client
+	redSync       *redsync.Redsync
+	mutexName     string
+	tokenLifetime time.Duration
 }
 
 func NewRedisClient(
 	address, password string,
+	tokenLifetime time.Duration,
 ) *RedisClient {
 	redisDB := redis.NewClient(&redis.Options{
 		Addr:     address,
@@ -30,9 +32,10 @@ func NewRedisClient(
 	redSync := redsync.New(pool)
 
 	return &RedisClient{
-		db:        *redisDB,
-		redSync:   redSync,
-		mutexName: "global",
+		db:            *redisDB,
+		redSync:       redSync,
+		mutexName:     "global",
+		tokenLifetime: tokenLifetime,
 	}
 }
 
@@ -43,12 +46,11 @@ func (c RedisClient) StoreRefreshToken(
 ) error {
 	strUserID := strconv.FormatInt(int64(userID), 10)
 
-	// mutexName := strUserID
-	mutex := c.redSync.NewMutex(c.mutexName)
-	if err := mutex.Lock(); err != nil {
+	mutex := c.redSync.NewMutex(c.mutexName, redsync.WithExpiry(1*time.Minute))
+	if err := mutex.LockContext(ctx); err != nil {
 		return err
 	}
-	defer mutex.Unlock()
+	defer mutex.UnlockContext(ctx)
 
 	err := c.db.Set(ctx, strUserID, hashedRefreshToken, time.Hour*48).Err()
 	if err != nil {
@@ -62,12 +64,12 @@ func (c RedisClient) GetToken(
 	ctx context.Context,
 	userID string,
 ) (string, error) {
-	// mutexName := userID
-	mutex := c.redSync.NewMutex(c.mutexName)
-	if err := mutex.Lock(); err != nil {
+	mutex := c.redSync.NewMutex(c.mutexName, redsync.WithExpiry(1*time.Minute))
+
+	if err := mutex.LockContext(ctx); err != nil {
 		return "", err
 	}
-	defer mutex.Unlock()
+	defer mutex.UnlockContext(ctx)
 
 	token, err := c.db.Get(ctx, userID).Result()
 	if err != nil {
@@ -76,6 +78,11 @@ func (c RedisClient) GetToken(
 
 	return token, nil
 }
+
+// func handleConnectionClose(conn *redis.Conn) {
+// 	// err := (*conn).Close()
+// 	(*conn).Close()
+// }
 
 // func (c RedisClient) StoreRefreshTokenStringID(
 // 	ctx context.Context,
