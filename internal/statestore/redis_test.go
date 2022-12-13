@@ -8,7 +8,7 @@ import (
 
 func TestRedisClient(t *testing.T) {
 	ctx := context.Background()
-	redisClient := NewRedisClient("localhost:6379", "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81", 48*time.Hour)
+	redisClient := newRedisClient("localhost:6379", "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81", 48*time.Hour)
 
 	const userId int32 = 9999
 

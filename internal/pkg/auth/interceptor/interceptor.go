@@ -13,13 +13,13 @@ import (
 
 type Interceptor struct {
 	jwtManager      jwt.JWTManager
-	redisClient     statestore.RedisClient
+	redisClient     statestore.Service
 	accessibleRoles map[string][]string
 }
 
 func NewAuthInterceptor(
 	jwtManager jwt.JWTManager,
-	redisClient statestore.RedisClient,
+	redisClient statestore.Service,
 	accessibleRoles map[string][]string,
 ) Interceptor {
 

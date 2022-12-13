@@ -5,52 +5,39 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-redsync/redsync/v4"
-	"github.com/go-redsync/redsync/v4/redis/goredis/v9"
+	// "github.com/go-redsync/redsync/v4"
+	// "github.com/go-redsync/redsync/v4/redis/goredis/v9"
 
 	"github.com/go-redis/redis/v9"
 )
 
-type RedisClient struct {
+type redisClient struct {
 	db            redis.Client
-	redSync       *redsync.Redsync
-	mutexName     string
 	tokenLifetime time.Duration
 }
 
-func NewRedisClient(
+func newRedisClient(
 	address, password string,
 	tokenLifetime time.Duration,
-) *RedisClient {
+) *redisClient {
 	redisDB := redis.NewClient(&redis.Options{
 		Addr:     address,
 		Password: password,
 		DB:       0,
 	})
 
-	pool := goredis.NewPool(redisDB)
-	redSync := redsync.New(pool)
-
-	return &RedisClient{
+	return &redisClient{
 		db:            *redisDB,
-		redSync:       redSync,
-		mutexName:     "global",
 		tokenLifetime: tokenLifetime,
 	}
 }
 
-func (c RedisClient) StoreRefreshToken(
+func (c redisClient) StoreRefreshToken(
 	ctx context.Context,
 	userID int32,
 	hashedRefreshToken string,
 ) error {
 	strUserID := strconv.FormatInt(int64(userID), 10)
-
-	mutex := c.redSync.NewMutex(c.mutexName, redsync.WithExpiry(1*time.Minute))
-	if err := mutex.LockContext(ctx); err != nil {
-		return err
-	}
-	defer mutex.UnlockContext(ctx)
 
 	err := c.db.Set(ctx, strUserID, hashedRefreshToken, time.Hour*48).Err()
 	if err != nil {
@@ -60,16 +47,10 @@ func (c RedisClient) StoreRefreshToken(
 	return nil
 }
 
-func (c RedisClient) GetToken(
+func (c redisClient) GetToken(
 	ctx context.Context,
 	userID string,
 ) (string, error) {
-	mutex := c.redSync.NewMutex(c.mutexName, redsync.WithExpiry(1*time.Minute))
-
-	if err := mutex.LockContext(ctx); err != nil {
-		return "", err
-	}
-	defer mutex.UnlockContext(ctx)
 
 	token, err := c.db.Get(ctx, userID).Result()
 	if err != nil {

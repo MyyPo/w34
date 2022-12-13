@@ -17,13 +17,13 @@ func TestInterceptor(t *testing.T) {
 		t.Errorf("failed to initialize jwtManager: %v", err)
 	}
 
-	redisClient := statestore.NewRedisClient("host.docker.internal:6379", "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81", 48*time.Hour)
+	redisClient := statestore.New()
 
 	roles := map[string][]string{
 		"201": {"admin"},
 	}
 
-	interceptor := NewAuthInterceptor(*jwtManager, *redisClient, roles)
+	interceptor := NewAuthInterceptor(*jwtManager, redisClient, roles)
 
 	t.Run("Basic test authorize", func(t *testing.T) {
 		err := interceptor.authorize(context.Background(), "200")

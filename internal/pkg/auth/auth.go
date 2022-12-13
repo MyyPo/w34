@@ -14,7 +14,7 @@ import (
 
 type AuthServer struct {
 	repo        Repository
-	redisClient statestore.RedisClient
+	redisClient statestore.Service
 	validator   validators.AuthValidator
 	jwtManager  jwt.JWTManager
 	hasher      hasher.Hasher
@@ -23,7 +23,7 @@ type AuthServer struct {
 
 func NewAuthServer(
 	repo Repository,
-	redisClient statestore.RedisClient,
+	redisClient statestore.Service,
 	validator validators.AuthValidator,
 	jwtManager jwt.JWTManager,
 	hasher hasher.Hasher,
