@@ -24,19 +24,19 @@ func NewJWTManager(
 	pathToRefreshPrivateSignature, pathToRefreshPublicSignature string,
 	accessTokenDuration, refreshTokenDuration time.Duration,
 ) (*JWTManager, error) {
-	accessPrivateSignature, err := LoadRSAPrivateKeyFromDisk(pathToAccessPrivateSignature)
+	accessPrivateSignature, err := loadRSAPrivateKeyFromDisk(pathToAccessPrivateSignature)
 	if err != nil {
 		return nil, err
 	}
-	accessPublicSignature, err := LoadRSAPublicKeyFromDisk(pathToAccessPublicSignature)
+	accessPublicSignature, err := loadRSAPublicKeyFromDisk(pathToAccessPublicSignature)
 	if err != nil {
 		return nil, err
 	}
-	refreshPrivateSignature, err := LoadRSAPrivateKeyFromDisk(pathToRefreshPrivateSignature)
+	refreshPrivateSignature, err := loadRSAPrivateKeyFromDisk(pathToRefreshPrivateSignature)
 	if err != nil {
 		return nil, err
 	}
-	refreshPublicSignature, err := LoadRSAPublicKeyFromDisk(pathToRefreshPublicSignature)
+	refreshPublicSignature, err := loadRSAPublicKeyFromDisk(pathToRefreshPublicSignature)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +136,7 @@ func (m JWTManager) ValidateJwtExtractClaims(jwtTokenString string, publicSignat
 	return claims, nil
 }
 
-func LoadRSAPrivateKeyFromDisk(location string) (*rsa.PrivateKey, error) {
+func loadRSAPrivateKeyFromDisk(location string) (*rsa.PrivateKey, error) {
 	keyData, err := os.ReadFile(location)
 	if err != nil {
 		return nil, err
@@ -148,7 +148,7 @@ func LoadRSAPrivateKeyFromDisk(location string) (*rsa.PrivateKey, error) {
 	return privateKey, nil
 }
 
-func LoadRSAPublicKeyFromDisk(location string) (*rsa.PublicKey, error) {
+func loadRSAPublicKeyFromDisk(location string) (*rsa.PublicKey, error) {
 	keyData, err := os.ReadFile(location)
 	if err != nil {
 		return nil, err
