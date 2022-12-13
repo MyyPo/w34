@@ -22,7 +22,7 @@ import (
 
 const (
 	host     = "host.docker.internal"
-	port     = 1234
+	port     = 5432
 	user     = "spuser"
 	password = "SPuser96"
 	dbname   = "auth"

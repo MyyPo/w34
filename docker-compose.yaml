@@ -1,7 +1,7 @@
 version: '3.9'
 services:
-  auth_app:
-    container_name: auth_container
+  main_app:
+    container_name: app_container
     environment:
       - POSTGRES_USER=${AUTH_DB_USER}
       - POSTGRES_PASSWORD=${AUTH_DB_PASSWORD}
@@ -11,46 +11,46 @@ services:
     tty: true
     build:
       context: .
-      dockerfile: ./build/auth/Dockerfile
+      dockerfile: ./build/main/Dockerfile.dev
     ports:
       - 8080:8080
     restart: on-failure
     volumes:
       - ./:/app
     depends_on:
-      - auth_redis
-      - auth_psqldb
+      - main_redis
+      - main_psqldb
     networks:
-      - auth
+      - main
 
-  auth_redis:
+  main_redis:
     image: redis:7.0.5-alpine
-    container_name: auth_redis_container
+    container_name: main_redis_container
     restart: always
     ports:
       - '6379:6379'
-    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
     volumes:
-      - auth_cache:/data
+      - redis_data:/data
     networks:
-      - auth
+      - main
 
-  auth_psqldb:
+  main_psqldb:
     image: postgres:latest
-    container_name: auth_postgres_container
+    container_name: main_postgres_container
     environment:
       - POSTGRES_USER=${AUTH_DB_USER}
       - POSTGRES_PASSWORD=${AUTH_DB_PASSWORD}
       - POSTGRES_DB=${AUTH_DB_NAME}
       - DATABASE_HOST=${AUTH_DB_HOST}
     ports:
-      - '1234:5432'
+      - '5432:5432'
     volumes:
       - ./pg_data:/var/lib/postgresql/data
     networks:
-      - auth
+      - main
 
-  auth_pgadmin:
+  main_pgadmin:
     container_name: pgadmin4_container
     image: dpage/pgadmin4
     restart: always
@@ -61,10 +61,10 @@ services:
       - "5050:80" 
 
 volumes:
-  auth_cache:
+  redis_data:
     driver: local
   pg_data:
 
 networks:
-  auth:
+  main:
     driver: bridge

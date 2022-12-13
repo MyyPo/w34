@@ -4,9 +4,9 @@ import (
 	"testing"
 )
 
-const usernameRegex = "^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$"
+// const usernameRegex = "^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$"
 
-var authV, _ = NewAuthValidator(60, usernameRegex)
+var authV, _ = NewAuthValidator(60, "")
 
 func TestValidateCredentials(t *testing.T) {
 	t.Parallel()

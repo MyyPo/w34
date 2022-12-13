@@ -14,6 +14,10 @@ type AuthValidator struct {
 }
 
 func NewAuthValidator(minEntropy float64, usernameRgxString string) (*AuthValidator, error) {
+	if usernameRgxString == "" {
+		usernameRgxString = "^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$"
+	}
+
 	usernameRgx, err := regexp.Compile(usernameRgxString)
 	if err != nil {
 		return nil, err
