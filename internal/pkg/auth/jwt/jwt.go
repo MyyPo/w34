@@ -12,7 +12,7 @@ import (
 
 type JWTManager struct {
 	pathToAccessPrivateSignature  string
-	pathToAccessPublicSignature   string
+	PathToAccessPublicSignature   string
 	pathToRefreshPrivateSignature string
 	PathToRefreshPublicSignature  string
 	accessTokenDuraion            time.Duration
@@ -26,7 +26,7 @@ func NewJWTManager(
 ) *JWTManager {
 	return &JWTManager{
 		pathToAccessPrivateSignature:  pathToAccessPrivateSignature,
-		pathToAccessPublicSignature:   pathToAccessPublicSignature,
+		PathToAccessPublicSignature:   pathToAccessPublicSignature,
 		pathToRefreshPrivateSignature: pathToRefreshPrivateSignature,
 		PathToRefreshPublicSignature:  pathToRefreshPublicSignature,
 		accessTokenDuraion:            accessTokenDuration,

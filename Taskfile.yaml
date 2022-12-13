@@ -30,6 +30,9 @@ tasks:
   tauthredis:
     cmds:
       - go test ./internal/pkg/auth/redis -v
+  tinterceptor:
+    cmds:
+      - go test ./internal/pkg/auth/interceptor -v
 
   tconfigs:
     cmds:
