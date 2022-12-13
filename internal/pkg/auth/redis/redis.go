@@ -58,63 +58,6 @@ func (c RedisClient) StoreRefreshToken(
 	return nil
 }
 
-func (c RedisClient) StoreRefreshTokenStringID(
-	ctx context.Context,
-	userID string,
-	hashedRefreshToken string,
-) error {
-	// mutexName := userID
-	mutex := c.redSync.NewMutex(c.mutexName)
-	if err := mutex.Lock(); err != nil {
-		return err
-	}
-	defer mutex.Unlock()
-
-	err := c.db.Set(ctx, userID, hashedRefreshToken, time.Hour*48).Err()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (c RedisClient) DeleteRefreshToken(
-	ctx context.Context,
-	userID int32,
-) error {
-	strUserID := strconv.FormatInt(int64(userID), 10)
-	// mutexName := strUserID
-	mutex := c.redSync.NewMutex(c.mutexName)
-	if err := mutex.Lock(); err != nil {
-		return err
-	}
-	defer mutex.Unlock()
-
-	err := c.db.Del(ctx, strUserID).Err()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-func (c RedisClient) DeleteRefreshTokenStringID(
-	ctx context.Context,
-	userID string,
-) error {
-	// mutexName := userID
-	mutex := c.redSync.NewMutex(c.mutexName)
-	if err := mutex.Lock(); err != nil {
-		return err
-	}
-	defer mutex.Unlock()
-
-	err := c.db.Del(ctx, userID).Err()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (c RedisClient) GetToken(
 	ctx context.Context,
 	userID string,
@@ -133,3 +76,59 @@ func (c RedisClient) GetToken(
 
 	return token, nil
 }
+
+// func (c RedisClient) StoreRefreshTokenStringID(
+// 	ctx context.Context,
+// 	userID string,
+// 	hashedRefreshToken string,
+// ) error {
+// 	// mutexName := userID
+// 	mutex := c.redSync.NewMutex(c.mutexName)
+// 	if err := mutex.Lock(); err != nil {
+// 		return err
+// 	}
+// 	defer mutex.Unlock()
+
+// 	err := c.db.Set(ctx, userID, hashedRefreshToken, time.Hour*48).Err()
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	return nil
+// }
+// func (c RedisClient) DeleteRefreshToken(
+// 	ctx context.Context,
+// 	userID int32,
+// ) error {
+// 	strUserID := strconv.FormatInt(int64(userID), 10)
+// 	// mutexName := strUserID
+// 	mutex := c.redSync.NewMutex(c.mutexName)
+// 	if err := mutex.Lock(); err != nil {
+// 		return err
+// 	}
+// 	defer mutex.Unlock()
+
+// 	err := c.db.Del(ctx, strUserID).Err()
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
+// func (c RedisClient) DeleteRefreshTokenStringID(
+// 	ctx context.Context,
+// 	userID string,
+// ) error {
+// 	// mutexName := userID
+// 	mutex := c.redSync.NewMutex(c.mutexName)
+// 	if err := mutex.Lock(); err != nil {
+// 		return err
+// 	}
+// 	defer mutex.Unlock()
+
+// 	err := c.db.Del(ctx, userID).Err()
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	return nil
+// }
