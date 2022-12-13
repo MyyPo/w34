@@ -66,30 +66,15 @@ func (s AuthServer) SignUp(
 
 	createdUserID := createdUser.UserID
 
-	accessToken, err := s.jwtManager.GenerateAccessToken(createdUserID)
+	newAccessToken, newRefreshToken, err := s.createTokensAndStoreRefresh(ctx, createdUserID)
 	if err != nil {
-		return nil, err
-	}
-
-	refreshToken, err := s.jwtManager.GenerateRefreshToken(createdUserID)
-	if err != nil {
-		return nil, err
-	}
-
-	// hashedRefreshToken, err := s.hasher.HashSecret(refreshToken)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	err = s.redisClient.StoreRefreshToken(ctx, createdUserID, refreshToken)
-	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("internal error")
 	}
 
 	return &authv1.SignUpResponse{
 		Tokens: &authv1.TokenPackage{
-			AccessToken:  accessToken,
-			RefreshToken: refreshToken,
+			AccessToken:  newAccessToken,
+			RefreshToken: newRefreshToken,
 		},
 	}, nil
 }
@@ -114,35 +99,15 @@ func (s AuthServer) SignIn(
 
 	retrievedUserID := userIDAndPassword.UserID
 
-	// delete the valid refresh token stored in db for this account, if it exists
-	err = s.redisClient.DeleteRefreshToken(ctx, retrievedUserID)
+	newAccessToken, newRefreshToken, err := s.createTokensAndStoreRefresh(ctx, retrievedUserID)
 	if err != nil {
-		return nil, err
-	}
-
-	accessToken, err := s.jwtManager.GenerateAccessToken(retrievedUserID)
-	if err != nil {
-		return nil, err
-	}
-	refreshToken, err := s.jwtManager.GenerateRefreshToken(retrievedUserID)
-	if err != nil {
-		return nil, err
-	}
-
-	// hashedRefreshToken, err := s.hasher.HashSecret(refreshToken)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	err = s.redisClient.StoreRefreshToken(ctx, retrievedUserID, refreshToken)
-	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("internal error")
 	}
 
 	return &authv1.SignInResponse{
 		Tokens: &authv1.TokenPackage{
-			AccessToken:  accessToken,
-			RefreshToken: refreshToken,
+			AccessToken:  newAccessToken,
+			RefreshToken: newRefreshToken,
 		},
 	}, nil
 }
@@ -165,41 +130,17 @@ func (s AuthServer) RefreshTokens(
 	if err != nil {
 		return nil, err
 	}
-	// throw an error if the token isn't stored in redis
+	// throw an error if the token from request isn't stored in redis
 	if currentTokenInDB != reqRefreshToken {
 		return nil, fmt.Errorf("used refresh token was provided")
-	}
-
-	// if err := s.hasher.CompareWithSecret(currentTokenInDB, reqRefreshToken); err != nil {
-	// 	return nil, fmt.Errorf("used refresh token was provided")
-	// }
-
-	// delete the current refresh token stored in db for this account
-	err = s.redisClient.DeleteRefreshTokenStringID(ctx, userID)
-	if err != nil {
-		return nil, err
 	}
 
 	// create new tokens
 	intUserID, _ := strconv.ParseInt(userID, 10, 32)
 	int32UserID := int32(intUserID)
-	newAccessToken, err := s.jwtManager.GenerateAccessToken(int32UserID)
+	newAccessToken, newRefreshToken, err := s.createTokensAndStoreRefresh(ctx, int32UserID)
 	if err != nil {
-		return nil, err
-	}
-	newRefreshToken, err := s.jwtManager.GenerateRefreshToken(int32UserID)
-	if err != nil {
-		return nil, err
-	}
-
-	// newHashedRefreshToken, err := s.hasher.HashSecret(newRefreshToken)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	err = s.redisClient.StoreRefreshTokenStringID(ctx, userID, newRefreshToken)
-	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("internal error")
 	}
 
 	return &authv1.RefreshTokensResponse{
@@ -208,4 +149,30 @@ func (s AuthServer) RefreshTokens(
 			RefreshToken: newRefreshToken,
 		},
 	}, nil
+}
+
+func (s AuthServer) createTokensAndStoreRefresh(
+	ctx context.Context,
+	userID int32,
+
+) (
+	newAccessToken string,
+	newRefreshToken string,
+	err error,
+) {
+	newAccessToken, err = s.jwtManager.GenerateAccessToken(userID)
+	if err != nil {
+		return "", "", err
+	}
+	newRefreshToken, err = s.jwtManager.GenerateRefreshToken(userID)
+	if err != nil {
+		return "", "", err
+	}
+
+	err = s.redisClient.StoreRefreshToken(ctx, userID, newRefreshToken)
+	if err != nil {
+		return "", "", err
+	}
+
+	return newAccessToken, newRefreshToken, nil
 }

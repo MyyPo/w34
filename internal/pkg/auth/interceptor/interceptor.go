@@ -69,3 +69,51 @@ func (i Interceptor) authorize(ctx context.Context, method string) error {
 
 	return nil
 }
+
+// used to try to refresh the session
+// func (i Interceptor) refresh(ctx context.Context, md metadata.MD) error {
+// 	refreshArr := md["refresh_token"]
+// 	if len(refreshArr) == 0 {
+// 		return status.Errorf(codes.Unauthenticated, "no access or refresh token was provided by metadata")
+// 	}
+// 	refreshToken := refreshArr[0]
+// 	claims, err := i.jwtManager.ValidateJwtExtractClaims(refreshToken, i.jwtManager.PathToRefreshPublicSignature)
+// 	if err != nil {
+// 		return status.Errorf(codes.Unauthenticated, "invalid refresh token")
+// 	}
+
+// 	tokenUserID := claims.Subject
+
+// 	refreshTokenInDB, err := i.redisClient.GetToken(ctx, tokenUserID)
+// 	if err != nil {
+// 		return status.Errorf(codes.Internal, "failed to authorize")
+// 	}
+// 	// verify that the token is whitelisted
+// 	if refreshToken != refreshTokenInDB {
+// 		return status.Errorf(codes.Unauthenticated, "invalid refresh token")
+// 	}
+
+// 	err = i.redisClient.DeleteRefreshTokenStringID(ctx, tokenUserID)
+// 	if err != nil {
+// 		return status.Errorf(codes.Internal, "failed to authorize")
+// 	}
+
+// 	// create new tokens
+// 	intUserID, _ := strconv.ParseInt(tokenUserID, 10, 32)
+// 	int32UserID := int32(intUserID)
+// 	newAccessToken, err := i.jwtManager.GenerateAccessToken(int32UserID)
+// 	if err != nil {
+// 		return status.Errorf(codes.Internal, "failed to authorize")
+// 	}
+// 	newRefreshToken, err := i.jwtManager.GenerateRefreshToken(int32UserID)
+// 	if err != nil {
+// 		return status.Errorf(codes.Internal, "failed to authorize")
+// 	}
+
+// 	err = i.redisClient.StoreRefreshTokenStringID(ctx, tokenUserID, newRefreshToken)
+// 	if err != nil {
+// 		return status.Errorf(codes.Internal, "failed to authorize")
+// 	}
+
+// 	return nil
+// }

@@ -31,10 +31,6 @@ const (
 
 func TestSignUpSignIn(t *testing.T) {
 	psqlImpl := setupPsqlRedis(t)
-	_, err := configs.NewConfig("../../../configs")
-	if err != nil {
-		t.Errorf("failed to load config: %q", err)
-	}
 
 	var signInRefreshToken string
 	var refreshedRefrToken string
@@ -133,6 +129,11 @@ func removeRows(db *sql.DB) {
 }
 
 func setupPsqlRedis(t *testing.T) *AuthServer {
+	config, err := configs.NewConfig("../../../configs")
+	if err != nil {
+		t.Errorf("failed to load config: %q", err)
+	}
+
 	psqlDB, err := sql.Open("postgres",
 		fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 			host, port, user, password, dbname))
@@ -150,7 +151,7 @@ func setupPsqlRedis(t *testing.T) *AuthServer {
 
 	jwtManager := jwt.NewJWTManager("../../../configs/rsa", "../../../configs/rsa.pub",
 		"../../../configs/refresh_rsa", "../../../configs/refresh_rsa.pub",
-		time.Minute*10, time.Hour*48)
+		config.AccessTokenDuration, config.RefreshTokenDuration)
 
 	// remove all affected database rows after the tests
 	t.Cleanup(func() { removeRows(psqlDB) })
