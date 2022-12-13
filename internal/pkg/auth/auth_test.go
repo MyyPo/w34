@@ -149,10 +149,12 @@ func setupPsqlRedis(t *testing.T) *AuthServer {
 		log.Fatalf("failed to initialize validator for testing: %q", err)
 	}
 
-	jwtManager := jwt.NewJWTManager("../../../configs/rsa", "../../../configs/rsa.pub",
+	jwtManager, err := jwt.NewJWTManager("../../../configs/rsa", "../../../configs/rsa.pub",
 		"../../../configs/refresh_rsa", "../../../configs/refresh_rsa.pub",
 		config.AccessTokenDuration, config.RefreshTokenDuration)
-
+	if err != nil {
+		log.Fatalf("failed to initialize jwtManager for testing: %q", err)
+	}
 	// remove all affected database rows after the tests
 	t.Cleanup(func() { removeRows(psqlDB) })
 	return NewAuthServer(psqlRepo, *redisClient, *authValidator, *jwtManager, *hasher)

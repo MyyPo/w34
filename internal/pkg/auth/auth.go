@@ -118,7 +118,7 @@ func (s AuthServer) RefreshTokens(
 ) (*authv1.RefreshTokensResponse, error) {
 
 	reqRefreshToken := req.GetRefreshToken()
-	tokenClaims, err := s.jwtManager.ValidateJwtExtractClaims(reqRefreshToken, s.jwtManager.PathToRefreshPublicSignature)
+	tokenClaims, err := s.jwtManager.ValidateJwtExtractClaims(reqRefreshToken, s.jwtManager.RefreshPublicSignature)
 	if err != nil {
 		return nil, err
 	}

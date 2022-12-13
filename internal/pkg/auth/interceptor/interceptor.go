@@ -62,7 +62,7 @@ func (i Interceptor) authorize(ctx context.Context, method string) error {
 		return status.Errorf(codes.Unauthenticated, "access token was not provided")
 	}
 	accessToken := accessArr[0]
-	_, err := i.jwtManager.ValidateJwtExtractClaims(accessToken, i.jwtManager.PathToAccessPublicSignature)
+	_, err := i.jwtManager.ValidateJwtExtractClaims(accessToken, i.jwtManager.AccessPublicSignature)
 	if err != nil {
 		return status.Errorf(codes.Unauthenticated, "invalid access token")
 	}

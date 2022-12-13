@@ -11,27 +11,44 @@ import (
 )
 
 type JWTManager struct {
-	pathToAccessPrivateSignature  string
-	PathToAccessPublicSignature   string
-	pathToRefreshPrivateSignature string
-	PathToRefreshPublicSignature  string
-	accessTokenDuraion            time.Duration
-	refreshTokenDuration          time.Duration
+	accessPrivateSignature  *rsa.PrivateKey
+	AccessPublicSignature   *rsa.PublicKey
+	refreshPrivateSignature *rsa.PrivateKey
+	RefreshPublicSignature  *rsa.PublicKey
+	accessTokenDuraion      time.Duration
+	refreshTokenDuration    time.Duration
 }
 
 func NewJWTManager(
 	pathToAccessPrivateSignature, pathToAccessPublicSignature string,
 	pathToRefreshPrivateSignature, pathToRefreshPublicSignature string,
 	accessTokenDuration, refreshTokenDuration time.Duration,
-) *JWTManager {
-	return &JWTManager{
-		pathToAccessPrivateSignature:  pathToAccessPrivateSignature,
-		PathToAccessPublicSignature:   pathToAccessPublicSignature,
-		pathToRefreshPrivateSignature: pathToRefreshPrivateSignature,
-		PathToRefreshPublicSignature:  pathToRefreshPublicSignature,
-		accessTokenDuraion:            accessTokenDuration,
-		refreshTokenDuration:          refreshTokenDuration,
+) (*JWTManager, error) {
+	accessPrivateSignature, err := LoadRSAPrivateKeyFromDisk(pathToAccessPrivateSignature)
+	if err != nil {
+		return nil, err
 	}
+	accessPublicSignature, err := LoadRSAPublicKeyFromDisk(pathToAccessPublicSignature)
+	if err != nil {
+		return nil, err
+	}
+	refreshPrivateSignature, err := LoadRSAPrivateKeyFromDisk(pathToRefreshPrivateSignature)
+	if err != nil {
+		return nil, err
+	}
+	refreshPublicSignature, err := LoadRSAPublicKeyFromDisk(pathToRefreshPublicSignature)
+	if err != nil {
+		return nil, err
+	}
+
+	return &JWTManager{
+		accessPrivateSignature:  accessPrivateSignature,
+		AccessPublicSignature:   accessPublicSignature,
+		refreshPrivateSignature: refreshPrivateSignature,
+		RefreshPublicSignature:  refreshPublicSignature,
+		accessTokenDuraion:      accessTokenDuration,
+		refreshTokenDuration:    refreshTokenDuration,
+	}, nil
 }
 
 type Claims struct {
@@ -40,10 +57,6 @@ type Claims struct {
 }
 
 func (m JWTManager) GenerateAccessToken(userID int32) (string, error) {
-	rsaPrivateAccessSignature, err := m.LoadRSAPrivateKeyFromDisk(m.pathToAccessPrivateSignature)
-	if err != nil {
-		return "", err
-	}
 
 	now := time.Now().UTC()
 	expires := now.Add(m.accessTokenDuraion)
@@ -62,7 +75,7 @@ func (m JWTManager) GenerateAccessToken(userID int32) (string, error) {
 		},
 	}
 
-	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(rsaPrivateAccessSignature)
+	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(m.accessPrivateSignature)
 
 	if err != nil {
 		return "", fmt.Errorf("failed to add claims to access token: %w", err)
@@ -72,10 +85,6 @@ func (m JWTManager) GenerateAccessToken(userID int32) (string, error) {
 }
 
 func (m JWTManager) GenerateRefreshToken(userID int32) (string, error) {
-	rsaPrivateRefreshSignature, err := m.LoadRSAPrivateKeyFromDisk(m.pathToRefreshPrivateSignature)
-	if err != nil {
-		return "", err
-	}
 
 	now := time.Now().UTC()
 	expires := now.Add(m.refreshTokenDuration)
@@ -94,7 +103,7 @@ func (m JWTManager) GenerateRefreshToken(userID int32) (string, error) {
 		},
 	}
 
-	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(rsaPrivateRefreshSignature)
+	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(m.refreshPrivateSignature)
 
 	if err != nil {
 		return "", fmt.Errorf("failed to add claims to refresh token: %w", err)
@@ -103,11 +112,7 @@ func (m JWTManager) GenerateRefreshToken(userID int32) (string, error) {
 	return refreshToken, nil
 }
 
-func (m JWTManager) ValidateJwtExtractClaims(jwtTokenString, publicSignaturePath string) (*Claims, error) {
-	rsaPublicSignature, err := m.LoadRSAPublicKeyFromDisk(publicSignaturePath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load the signature: %q", err)
-	}
+func (m JWTManager) ValidateJwtExtractClaims(jwtTokenString string, publicSignature *rsa.PublicKey) (*Claims, error) {
 
 	var claims *Claims
 	jwtToken, err := jwt.ParseWithClaims(jwtTokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
@@ -116,7 +121,7 @@ func (m JWTManager) ValidateJwtExtractClaims(jwtTokenString, publicSignaturePath
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		// check the signature of the token
-		return rsaPublicSignature, nil
+		return publicSignature, nil
 	})
 
 	if err != nil {
@@ -131,7 +136,7 @@ func (m JWTManager) ValidateJwtExtractClaims(jwtTokenString, publicSignaturePath
 	return claims, nil
 }
 
-func (m JWTManager) LoadRSAPrivateKeyFromDisk(location string) (*rsa.PrivateKey, error) {
+func LoadRSAPrivateKeyFromDisk(location string) (*rsa.PrivateKey, error) {
 	keyData, err := os.ReadFile(location)
 	if err != nil {
 		return nil, err
@@ -143,7 +148,7 @@ func (m JWTManager) LoadRSAPrivateKeyFromDisk(location string) (*rsa.PrivateKey,
 	return privateKey, nil
 }
 
-func (m JWTManager) LoadRSAPublicKeyFromDisk(location string) (*rsa.PublicKey, error) {
+func LoadRSAPublicKeyFromDisk(location string) (*rsa.PublicKey, error) {
 	keyData, err := os.ReadFile(location)
 	if err != nil {
 		return nil, err

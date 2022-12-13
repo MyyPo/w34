@@ -10,9 +10,12 @@ import (
 )
 
 func TestInterceptor(t *testing.T) {
-	jwtManager := jwt.NewJWTManager("../../../configs/rsa", "../../../configs/rsa.pub",
-		"../../../configs/refresh_rsa", "../../../configs/refresh_rsa.pub",
+	jwtManager, err := jwt.NewJWTManager("../../../../configs/rsa", "../../../../configs/rsa.pub",
+		"../../../../configs/refresh_rsa", "../../../../configs/refresh_rsa.pub",
 		time.Minute*10, time.Hour*48)
+	if err != nil {
+		t.Errorf("failed to initialize jwtManager: %v", err)
+	}
 
 	redisClient := auth_redis.NewRedisClient("host.docker.internal:6379", "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81")
 
