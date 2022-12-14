@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package dev.v1;
+
+option go_package = "github.com/MyyPo/w34.Go/gen/go/dev/v1;devpb";
+
+import "dev/v1/dev.proto";
+
+service DevService {
+    rpc NewProject (NewProjectRequest) returns (NewProjectResponse);
+}
+

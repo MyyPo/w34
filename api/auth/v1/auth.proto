@@ -10,3 +10,29 @@ message TokenPackage {
     string refresh_token = 2;
 }
 
+message SignUpRequest {
+    string username = 1;
+    string email = 2;
+    string password = 3;
+}
+
+message SignUpResponse {
+    TokenPackage tokens = 1;
+}
+
+message SignInRequest {
+    string un_or_email = 1;
+    string password = 2;
+}
+
+message SignInResponse {
+    TokenPackage tokens = 1;
+}
+
+message RefreshTokensRequest {
+    string refresh_token = 1;
+}
+
+message RefreshTokensResponse {
+    TokenPackage tokens = 1;
+}
