@@ -10,7 +10,7 @@ import (
 
 	"github.com/MyyPo/w34.Go/configs"
 	authv1 "github.com/MyyPo/w34.Go/gen/go/auth/v1"
-	t "github.com/MyyPo/w34.Go/gen/psql/auth/public/table"
+	t "github.com/MyyPo/w34.Go/gen/psql/main/public/table"
 	"github.com/MyyPo/w34.Go/internal/adapters/auth/psql"
 	"github.com/MyyPo/w34.Go/internal/pkg/auth/hasher"
 	"github.com/MyyPo/w34.Go/internal/pkg/auth/jwt"
@@ -133,7 +133,7 @@ func setupPsqlRedis(t *testing.T) *AuthServer {
 		log.Fatalf("failed to connect to db for testing: %q", err)
 	}
 	hasher := hasher.NewHasher()
-	psqlRepo := auth_psql_adapter.NewPSQLRepository(psqlDB)
+	psqlRepo := auth_psql_adapter.NewAuthPSQLRepository(psqlDB)
 	redisClient := statestore.New()
 	authValidator, err := validators.NewAuthValidator(60, "^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$")
 	if err != nil {

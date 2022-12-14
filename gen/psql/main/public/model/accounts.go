@@ -16,8 +16,8 @@ type Accounts struct {
 	Username      string
 	Password      string
 	Email         string
-	AccountStatus Status
-	Online        *bool
+	AccountStatus *Status
+	Online        bool
 	CreatedAt     *time.Time
 	LastLogin     *time.Time
 }

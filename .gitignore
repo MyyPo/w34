@@ -6,3 +6,4 @@
 /configs/rsa.pub
 /configs/refresh_rsa
 /configs/refresh_rsa.pub
+/configs/docker.dev.env

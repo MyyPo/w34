@@ -4,20 +4,20 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/MyyPo/w34.Go/gen/psql/auth/public/model"
-	t "github.com/MyyPo/w34.Go/gen/psql/auth/public/table"
+	"github.com/MyyPo/w34.Go/gen/psql/main/public/model"
+	t "github.com/MyyPo/w34.Go/gen/psql/main/public/table"
 	j "github.com/go-jet/jet/v2/postgres"
 )
 
-type PSQLRepository struct {
+type AuthPSQLRepository struct {
 	db *sql.DB
 }
 
-func NewPSQLRepository(db *sql.DB) *PSQLRepository {
-	return &PSQLRepository{db: db}
+func NewAuthPSQLRepository(db *sql.DB) *AuthPSQLRepository {
+	return &AuthPSQLRepository{db: db}
 }
 
-func (r PSQLRepository) CreateUser(
+func (r AuthPSQLRepository) CreateUser(
 	ctx context.Context,
 	newUsername string,
 	newEmail string,
@@ -47,7 +47,7 @@ func (r PSQLRepository) CreateUser(
 	return result, nil
 }
 
-func (r PSQLRepository) LookupExistingUser(
+func (r AuthPSQLRepository) LookupExistingUser(
 	ctx context.Context,
 	usernameOrEmail string,
 ) (model.Accounts, error) {

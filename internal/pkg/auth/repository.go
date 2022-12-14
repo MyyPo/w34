@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 
-	"github.com/MyyPo/w34.Go/gen/psql/auth/public/model"
+	"github.com/MyyPo/w34.Go/gen/psql/main/public/model"
 )
 
 type Repository interface {

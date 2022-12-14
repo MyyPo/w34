@@ -1,4 +1,4 @@
-package auth_psql_adapter
+package dev_psql_adapter
 
 // import (
 // 	"context"
@@ -17,29 +17,24 @@ const (
 	dbname   = "auth"
 )
 
-// func TestAuthAdapter(t *testing.T) {
+// func TestDevAdapter(t *testing.T) {
 // 	psqlDB, err := sql.Open("postgres",
 // 		fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 // 			host, port, user, password, dbname))
 // 	if err != nil {
 // 		log.Fatalf("failed to connect to db for testing: %q", err)
 // 	}
-// 	psqlRepo := NewPSQLRepository(psqlDB)
 
-// 	t.Run("Lookup existing user by username", func(t *testing.T) {
+// 	psqlRepo := NewDevPSQLRepository(psqlDB)
+
+// 	t.Run("Valid create new project", func(t *testing.T) {
 // 		ctx := context.Background()
-// 		username := "test"
-// 		_, err := psqlRepo.LookupExistingUser(ctx, username)
+// 		projectName := "test"
+// 		ownerID := "47"
+// 		_, err := psqlRepo.CreateProject(ctx, projectName, ownerID)
 // 		if err != nil {
 // 			t.Errorf("undexpected error: %v", err)
-// 		}
-// 	})
-// 	t.Run("Lookup existing user by email", func(t *testing.T) {
-// 		ctx := context.Background()
-// 		email := "test@test.com"
-// 		_, err := psqlRepo.LookupExistingUser(ctx, email)
-// 		if err != nil {
-// 			t.Errorf("undexpected error: %v", err)
+
 // 		}
 // 	})
 // }
