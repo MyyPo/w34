@@ -130,7 +130,7 @@ func (m JWTManager) ValidateJwtExtractClaims(jwtTokenString string, publicSignat
 
 	claims, ok := jwtToken.Claims.(*Claims)
 	if !ok || !jwtToken.Valid {
-		return nil, fmt.Errorf("claims error: %q", err)
+		return nil, fmt.Errorf("claims error")
 	}
 
 	return claims, nil

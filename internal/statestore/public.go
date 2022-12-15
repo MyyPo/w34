@@ -13,6 +13,9 @@ type Service interface {
 
 	// Retrieve a whitelisted token for a given user
 	GetToken(ctx context.Context, userID string) (string, error)
+
+	// Alt version of StoreRefreshToken
+	StoreRefreshTokenStringID(ctx context.Context, userID string, hashedRefreshToken string) error
 }
 
 func New() Service {

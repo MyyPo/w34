@@ -60,30 +60,23 @@ func (c redisClient) GetToken(
 	return token, nil
 }
 
+func (c redisClient) StoreRefreshTokenStringID(
+	ctx context.Context,
+	userID string,
+	hashedRefreshToken string,
+) error {
+	err := c.db.Set(ctx, userID, hashedRefreshToken, time.Hour*48).Err()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // func handleConnectionClose(conn *redis.Conn) {
 // 	// err := (*conn).Close()
 // 	(*conn).Close()
 // }
 
-// func (c RedisClient) StoreRefreshTokenStringID(
-// 	ctx context.Context,
-// 	userID string,
-// 	hashedRefreshToken string,
-// ) error {
-// 	// mutexName := userID
-// 	mutex := c.redSync.NewMutex(c.mutexName)
-// 	if err := mutex.Lock(); err != nil {
-// 		return err
-// 	}
-// 	defer mutex.Unlock()
-
-// 	err := c.db.Set(ctx, userID, hashedRefreshToken, time.Hour*48).Err()
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }
 // func (c RedisClient) DeleteRefreshToken(
 // 	ctx context.Context,
 // 	userID int32,
