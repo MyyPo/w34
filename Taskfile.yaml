@@ -30,7 +30,7 @@ tasks:
       - go test ./internal/pkg/auth/validators -v
   tjwt:
     cmds:
-      - go test ./internal/pkg/auth/jwt -v -count=1
+      - go test ./internal/jwt -v -count=1
   thasher:
     cmds:
       - go test ./internal/pkg/auth/hasher -v

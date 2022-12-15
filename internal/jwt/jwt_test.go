@@ -14,8 +14,8 @@ func TestJWT(t *testing.T) {
 
 	// t.Logf("current config: %v", conf)
 
-	jwtManager, err := NewJWTManager("../../../../configs/rsa", "../../../../configs/rsa.pub",
-		"../../../../configs/refresh_rsa", "../../../../configs/refresh_rsa.pub",
+	jwtManager, err := NewJWTManager("../../configs/rsa", "../../configs/rsa.pub",
+		"../../configs/refresh_rsa", "../../configs/refresh_rsa.pub",
 		time.Minute*10, time.Hour*48)
 	if err != nil {
 		t.Errorf("err initializing jwtManager: %v", err)

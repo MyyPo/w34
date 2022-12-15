@@ -10,5 +10,6 @@ type Repository interface {
 	CreateProject(
 		ctx context.Context,
 		projectName string,
+		ownerID string,
 	) (model.Projects, error)
 }

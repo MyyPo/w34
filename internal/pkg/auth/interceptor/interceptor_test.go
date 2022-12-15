@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/MyyPo/w34.Go/internal/pkg/auth/jwt"
+	"github.com/MyyPo/w34.Go/internal/jwt"
 	"github.com/MyyPo/w34.Go/internal/statestore"
 )
 

@@ -6,8 +6,8 @@ import (
 	"strconv"
 
 	authv1 "github.com/MyyPo/w34.Go/gen/go/auth/v1"
+	"github.com/MyyPo/w34.Go/internal/jwt"
 	"github.com/MyyPo/w34.Go/internal/pkg/auth/hasher"
-	"github.com/MyyPo/w34.Go/internal/pkg/auth/jwt"
 	"github.com/MyyPo/w34.Go/internal/pkg/auth/validators"
 	"github.com/MyyPo/w34.Go/internal/statestore"
 )

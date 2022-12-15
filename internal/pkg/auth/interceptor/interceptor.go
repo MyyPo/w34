@@ -3,7 +3,7 @@ package interceptor
 import (
 	"context"
 
-	"github.com/MyyPo/w34.Go/internal/pkg/auth/jwt"
+	"github.com/MyyPo/w34.Go/internal/jwt"
 	"github.com/MyyPo/w34.Go/internal/statestore"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
