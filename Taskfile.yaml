@@ -25,21 +25,26 @@ tasks:
   tadapters:
     cmds:
       - go test ./internal/adapters/... -v -count=1
-  tvalidators:
-    cmds:
-      - go test ./internal/pkg/auth/validators -v
   tjwt:
     cmds:
       - go test ./internal/jwt -v -count=1
+  tinterceptor:
+    cmds:
+      - go test ./internal/pkg/auth/interceptor -v
+
+  tauthv:
+    cmds:
+      - go test ./internal/pkg/auth/validator -v
   thasher:
     cmds:
       - go test ./internal/pkg/auth/hasher -v
   tauthredis:
     cmds:
       - go test ./internal/pkg/auth/redis -v
-  tinterceptor:
+
+  tdevv:
     cmds:
-      - go test ./internal/pkg/auth/interceptor -v
+      - go test ./internal/pkg/dev/validator -v
 
   tconfigs:
     cmds:

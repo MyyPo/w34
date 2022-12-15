@@ -1,4 +1,4 @@
-package validators
+package auth_validator
 
 import (
 	"testing"

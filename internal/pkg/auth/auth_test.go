@@ -14,7 +14,7 @@ import (
 	"github.com/MyyPo/w34.Go/internal/adapters/auth/psql"
 	"github.com/MyyPo/w34.Go/internal/jwt"
 	"github.com/MyyPo/w34.Go/internal/pkg/auth/hasher"
-	"github.com/MyyPo/w34.Go/internal/pkg/auth/validators"
+	validator "github.com/MyyPo/w34.Go/internal/pkg/auth/validator"
 	"github.com/MyyPo/w34.Go/internal/statestore"
 	. "github.com/go-jet/jet/v2/postgres"
 	_ "github.com/lib/pq"
@@ -135,7 +135,7 @@ func setupPsqlRedis(t *testing.T) *AuthServer {
 	hasher := hasher.NewHasher()
 	psqlRepo := auth_psql_adapter.NewAuthPSQLRepository(psqlDB)
 	redisClient := statestore.New()
-	authValidator, err := validators.NewAuthValidator(60, "^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$")
+	authValidator, err := validator.NewAuthValidator(60, "^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$")
 	if err != nil {
 		log.Fatalf("failed to initialize validator for testing: %q", err)
 	}

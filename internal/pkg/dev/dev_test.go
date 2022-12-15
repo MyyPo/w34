@@ -47,6 +47,23 @@ func Test(t *testing.T) {
 		}
 
 	})
+	t.Run("Try to create a new project with the same name", func(t *testing.T) {
+		md := metadata.MD{
+			"access_token": []string{accessToken},
+		}
+		ctx := metadata.NewIncomingContext(context.Background(), md)
+
+		req := &devv1.NewProjectRequest{
+			Name:   "int_test",
+			Public: true,
+		}
+
+		_, err := devServer.CreateProject(ctx, req)
+		if err == nil {
+			t.Errorf("created a project with the repeating name")
+		}
+
+	})
 
 }
 
