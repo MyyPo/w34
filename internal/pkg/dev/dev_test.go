@@ -27,7 +27,7 @@ const (
 	dbname   = "auth"
 )
 
-func Test(t *testing.T) {
+func TestDevServer(t *testing.T) {
 	devServer, accessToken := setupPsql(t)
 
 	t.Run("Valid create a new project", func(t *testing.T) {
@@ -63,6 +63,36 @@ func Test(t *testing.T) {
 			t.Errorf("created a project with the repeating name")
 		}
 
+	})
+	t.Run("Delete the created project", func(t *testing.T) {
+		md := metadata.MD{
+			"access_token": []string{accessToken},
+		}
+		ctx := metadata.NewIncomingContext(context.Background(), md)
+
+		req := &devv1.DeleteProjectRequest{
+			Name: "int_test",
+		}
+
+		_, err := devServer.DeleteProject(ctx, req)
+		if err != nil {
+			t.Errorf("failed to delete a project: %v", err)
+		}
+	})
+	t.Run("Try to delete the deleted project again", func(t *testing.T) {
+		md := metadata.MD{
+			"access_token": []string{accessToken},
+		}
+		ctx := metadata.NewIncomingContext(context.Background(), md)
+
+		req := &devv1.DeleteProjectRequest{
+			Name: "int_test",
+		}
+
+		_, err := devServer.DeleteProject(ctx, req)
+		if err == nil {
+			t.Errorf("no error raised trying to delete the project")
+		}
 	})
 
 }

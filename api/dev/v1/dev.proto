@@ -12,3 +12,11 @@ message NewProjectRequest {
 message NewProjectResponse {
     
 }
+
+message DeleteProjectRequest {
+    string name = 1;
+}
+
+message DeleteProjectResponse {
+
+}

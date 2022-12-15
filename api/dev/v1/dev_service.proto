@@ -8,5 +8,6 @@ import "dev/v1/dev.proto";
 
 service DevService {
     rpc NewProject (NewProjectRequest) returns (NewProjectResponse);
+    rpc DeleteProject (DeleteProjectRequest) returns (DeleteProjectResponse);
 }
 

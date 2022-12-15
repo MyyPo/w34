@@ -3,9 +3,12 @@ package dev_psql_adapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"strconv"
 
 	"github.com/MyyPo/w34.Go/gen/psql/main/public/model"
 	t "github.com/MyyPo/w34.Go/gen/psql/main/public/table"
+	j "github.com/go-jet/jet/v2/postgres"
 )
 
 type DevPSQLRepository struct {
@@ -40,4 +43,36 @@ func (r DevPSQLRepository) CreateProject(
 	}
 
 	return result, nil
+}
+
+func (r DevPSQLRepository) DeleteProject(
+	ctx context.Context,
+	projectName string,
+	ownerID string,
+) error {
+	intOwnerID, err := strconv.ParseInt(ownerID, 10, 32)
+	if err != nil {
+		return fmt.Errorf("internal error")
+	}
+
+	stmt := t.Projects.
+		DELETE().
+		WHERE(
+			t.Projects.OwnerID.EQ(j.Int(intOwnerID)).
+				AND(
+					t.Projects.Name.EQ(j.String(projectName))),
+		)
+
+	res, err := stmt.Exec(r.db)
+
+	if err != nil {
+		return err
+	}
+
+	rowsDeleted, _ := res.RowsAffected()
+	if rowsDeleted == 0 {
+		return fmt.Errorf("there is no project with such name")
+	}
+
+	return nil
 }
