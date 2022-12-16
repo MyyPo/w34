@@ -7,7 +7,12 @@ option go_package = "github.com/MyyPo/w34.Go/gen/go/dev/v1;devpb";
 import "dev/v1/dev.proto";
 
 service DevService {
+    // Used to initiate a new user project
     rpc NewProject (NewProjectRequest) returns (NewProjectResponse);
     rpc DeleteProject (DeleteProjectRequest) returns (DeleteProjectResponse);
+
+    // Used to create a location for the specified project
+    // Every game scene has to be linked to a certain location
+    rpc NewLocation (NewLocationRequest) returns (NewLocationResponse);
 }
 

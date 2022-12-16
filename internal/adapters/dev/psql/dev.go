@@ -33,6 +33,7 @@ func (r DevPSQLRepository) CreateProject(
 		projectName,
 		ownerID,
 	).RETURNING(
+		t.Projects.ID,
 		t.Projects.Name,
 	)
 
@@ -75,4 +76,30 @@ func (r DevPSQLRepository) DeleteProject(
 	}
 
 	return nil
+}
+
+func (r DevPSQLRepository) CreateLocation(
+	ctx context.Context,
+	projectID int32,
+	locationName string,
+) (model.Locations, error) {
+
+	stmt := t.Locations.
+		INSERT(
+			t.Locations.ProjectID,
+			t.Locations.Name,
+		).
+		VALUES(
+			projectID,
+			locationName,
+		).RETURNING(
+		t.Locations.ID,
+	)
+	var result model.Locations
+	err := stmt.Query(r.db, &result)
+	if err != nil {
+		return model.Locations{}, err
+	}
+
+	return result, nil
 }

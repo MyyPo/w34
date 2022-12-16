@@ -17,4 +17,9 @@ type Repository interface {
 		projectName string,
 		ownerID string,
 	) error
+	CreateLocation(
+		ctx context.Context,
+		projectID int32,
+		locationName string,
+	) (model.Locations, error)
 }

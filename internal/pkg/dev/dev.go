@@ -81,3 +81,10 @@ func (s DevServer) DeleteProject(
 
 	return &devv1.DeleteProjectResponse{}, nil
 }
+
+func (s DevServer) CreateLocation(
+	ctx context.Context,
+	req *devv1.NewLocationRequest,
+) (*devv1.NewLocationResponse, error) {
+	return nil, nil
+}

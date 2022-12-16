@@ -65,6 +65,7 @@ func (c redisClient) StoreRefreshTokenStringID(
 	userID string,
 	hashedRefreshToken string,
 ) error {
+
 	err := c.db.Set(ctx, userID, hashedRefreshToken, time.Hour*48).Err()
 	if err != nil {
 		return err

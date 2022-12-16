@@ -8,7 +8,6 @@ message NewProjectRequest {
     string name = 1;
     bool public = 2;  
 }
-
 message NewProjectResponse {
     
 }
@@ -16,7 +15,14 @@ message NewProjectResponse {
 message DeleteProjectRequest {
     string name = 1;
 }
-
 message DeleteProjectResponse {
 
+}
+
+message NewLocationRequest {
+    string project_name = 1;
+    string location_name = 2;
+}
+message NewLocationResponse {
+    
 }
