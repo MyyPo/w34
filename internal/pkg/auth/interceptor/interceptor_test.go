@@ -112,4 +112,45 @@ func TestInterceptor(t *testing.T) {
 			t.Errorf("authorized the invalid request")
 		}
 	})
+	t.Run("Try to pass fake user id to context with access token", func(t *testing.T) {
+		accessToken, _ := jwtManager.GenerateAccessToken(42)
+
+		md := metadata.New(map[string]string{
+			"access_token":  accessToken,
+			"refresh_token": "",
+			"user_id":       "999",
+		})
+
+		contextWithMD := metadata.NewIncomingContext(context.Background(), md)
+
+		newCtx, err := interceptor.authorize(contextWithMD, "201")
+		if err != nil {
+			t.Errorf("unexpected error with valid access token: %v", err)
+		}
+		if newCtx.Value(userIdKey) != "42" {
+			t.Errorf("unexpected change of user id in md")
+		}
+
+	})
+	t.Run("Try to pass fake user id to context with refresh token", func(t *testing.T) {
+		refreshToken, _ := jwtManager.GenerateRefreshToken(42)
+		redisClient.StoreRefreshToken(context.Background(), 42, refreshToken)
+
+		md := metadata.New(map[string]string{
+			"access_token":  "",
+			"refresh_token": refreshToken,
+			"user_id":       "999",
+		})
+
+		contextWithMD := metadata.NewIncomingContext(context.Background(), md)
+
+		newCtx, err := interceptor.authorize(contextWithMD, "201")
+		if err != nil {
+			t.Errorf("unexpected error with valid refresh token: %v", err)
+		}
+		if newCtx.Value(userIdKey) != "42" {
+			t.Errorf("unexpected change of user id in md")
+		}
+
+	})
 }

@@ -23,7 +23,8 @@ const (
 func TestDevAdapter(t *testing.T) {
 	var projectName = "test"
 	var locationName = "Test location"
-	var projectID int32
+	// var projectID int32
+	ownerID := "47"
 
 	psqlDB, err := sql.Open("postgres",
 		fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
@@ -35,39 +36,38 @@ func TestDevAdapter(t *testing.T) {
 	psqlRepo := NewDevPSQLRepository(psqlDB)
 
 	t.Run("Valid create new project", func(t *testing.T) {
-		ownerID := "47"
-		got, err := psqlRepo.CreateProject(context.Background(), projectName, ownerID)
+		_, err := psqlRepo.CreateProject(context.Background(), projectName, ownerID)
 		if err != nil {
 			t.Errorf("undexpected error: %v", err)
 
 		}
 
-		projectID = got.ID
+		// projectID = got.ID
 	})
 
 	t.Run("Valid create a new location", func(t *testing.T) {
-		got, err := psqlRepo.CreateLocation(context.Background(), projectID, locationName)
+		got, err := psqlRepo.CreateLocation(context.Background(), projectName, locationName, ownerID)
 		if err != nil {
 			t.Errorf("unexpected error creating location: %v", err)
 		}
 
 		t.Log(got.ID)
 	})
-	removeRows(psqlDB, 47, locationName)
+	t.Cleanup(func() { removeRows(psqlDB) })
 }
 
-func removeRows(db *sql.DB, ownerID int32, locationName string) {
+func removeRows(db *sql.DB) {
 	stmt := t.Projects.
 		DELETE().
 		WHERE(
-			t.Projects.OwnerID.EQ(j.Int(int64(ownerID))),
+			t.Projects.Name.NOT_EQ(j.String("")),
 		)
 	stmt.Exec(db)
 
 	stmt2 := t.Locations.
 		DELETE().
 		WHERE(
-			t.Locations.Name.EQ(j.String(locationName)),
+			t.Locations.Name.NOT_EQ(j.String("")),
 		)
 	stmt2.Exec(db)
 

@@ -80,9 +80,30 @@ func (r DevPSQLRepository) DeleteProject(
 
 func (r DevPSQLRepository) CreateLocation(
 	ctx context.Context,
-	projectID int32,
+	projectName string,
 	locationName string,
+	ownerID string,
 ) (model.Locations, error) {
+	intOwnerID, err := strconv.ParseInt(ownerID, 10, 32)
+	if err != nil {
+		return model.Locations{}, fmt.Errorf("internal error")
+	}
+
+	lookupProjectID := t.Projects.
+		SELECT(
+			t.Projects.ID,
+		).WHERE(
+		t.Projects.Name.EQ(j.String(projectName)).
+			AND(
+				t.Projects.OwnerID.EQ(j.Int(intOwnerID)),
+			),
+	)
+
+	var lookupResult model.Projects
+	err = lookupProjectID.Query(r.db, &lookupResult)
+	if err != nil {
+		return model.Locations{}, nil
+	}
 
 	stmt := t.Locations.
 		INSERT(
@@ -90,13 +111,13 @@ func (r DevPSQLRepository) CreateLocation(
 			t.Locations.Name,
 		).
 		VALUES(
-			projectID,
+			lookupResult.ID,
 			locationName,
 		).RETURNING(
 		t.Locations.ID,
 	)
 	var result model.Locations
-	err := stmt.Query(r.db, &result)
+	err = stmt.Query(r.db, &result)
 	if err != nil {
 		return model.Locations{}, err
 	}
