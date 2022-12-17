@@ -82,21 +82,27 @@ func (s DevServer) DeleteProject(
 	return &devv1.DeleteProjectResponse{}, nil
 }
 
-// func (s DevServer) CreateLocation(
-// 	ctx context.Context,
-// 	req *devv1.NewLocationRequest,
-// ) (*devv1.NewLocationResponse, error) {
-// 	md, ok := metadata.FromIncomingContext(ctx)
-// 	if !ok {
-// 		return nil, fmt.Errorf("metadata was not provided")
-// 	}
-// 	userID := md["user_id"]
-// 	if len(accessArr) == 0 {
-// 		return nil, fmt.Errorf("access token was not provided")
-// 	}
+func (s DevServer) CreateLocation(
+	ctx context.Context,
+	req *devv1.NewLocationRequest,
+) (*devv1.NewLocationResponse, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, fmt.Errorf("metadata was not provided")
+	}
+	userIDArr := md["user_id"]
+	if len(userIDArr) == 0 {
+		return nil, fmt.Errorf("metadata was not provided")
+	}
 
-// 	projectID := req.get
-// 	err := s.repo.CreateLocation(ctx, )
+	userID := userIDArr[0]
+	projectName := req.GetProjectName()
+	locationName := req.GetLocationName()
 
-// 	return nil, nil
-// }
+	_, err := s.repo.CreateLocation(ctx, projectName, locationName, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &devv1.NewLocationResponse{}, nil
+}

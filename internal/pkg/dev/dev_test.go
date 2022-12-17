@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 
 	"log"
 	"testing"
@@ -28,7 +29,8 @@ const (
 )
 
 func TestDevServer(t *testing.T) {
-	devServer, accessToken := setupPsql(t)
+	devServer, accessToken, testUserID := setupPsql(t)
+	projectName := "int_test"
 
 	t.Run("Valid create a new project", func(t *testing.T) {
 		md := metadata.MD{
@@ -37,7 +39,7 @@ func TestDevServer(t *testing.T) {
 		ctx := metadata.NewIncomingContext(context.Background(), md)
 
 		req := &devv1.NewProjectRequest{
-			Name:   "int_test",
+			Name:   projectName,
 			Public: true,
 		}
 
@@ -54,7 +56,7 @@ func TestDevServer(t *testing.T) {
 		ctx := metadata.NewIncomingContext(context.Background(), md)
 
 		req := &devv1.NewProjectRequest{
-			Name:   "int_test",
+			Name:   projectName,
 			Public: true,
 		}
 
@@ -64,21 +66,60 @@ func TestDevServer(t *testing.T) {
 		}
 
 	})
-	t.Run("Delete the created project", func(t *testing.T) {
+	t.Run("Create a new location", func(t *testing.T) {
+		strTestUserID := strconv.FormatInt(int64(testUserID), 10)
+
 		md := metadata.MD{
-			"access_token": []string{accessToken},
+			"user_id": []string{strTestUserID},
 		}
 		ctx := metadata.NewIncomingContext(context.Background(), md)
 
-		req := &devv1.DeleteProjectRequest{
-			Name: "int_test",
+		req := &devv1.NewLocationRequest{
+			ProjectName:  projectName,
+			LocationName: "Imperial city sewers",
 		}
 
-		_, err := devServer.DeleteProject(ctx, req)
+		_, err := devServer.CreateLocation(ctx, req)
 		if err != nil {
-			t.Errorf("failed to delete a project: %v", err)
+			t.Errorf("failed to create a valid location: %v", err)
 		}
 	})
+	t.Run("Try to create a new location with another user's id", func(t *testing.T) {
+		md := metadata.MD{
+			"user_id": []string{"1337"},
+		}
+		ctx := metadata.NewIncomingContext(context.Background(), md)
+
+		req := &devv1.NewLocationRequest{
+			ProjectName:  projectName,
+			LocationName: "Very bad place",
+		}
+
+		_, err := devServer.CreateLocation(ctx, req)
+		if err == nil {
+			t.Errorf("created context with token from another user")
+		}
+
+		t.Log(err)
+	})
+
+	// will violate the the key constraint
+
+	// t.Run("Delete the created project", func(t *testing.T) {
+	// 	md := metadata.MD{
+	// 		"access_token": []string{accessToken},
+	// 	}
+	// 	ctx := metadata.NewIncomingContext(context.Background(), md)
+
+	// 	req := &devv1.DeleteProjectRequest{
+	// 		Name: projectName,
+	// 	}
+
+	// 	_, err := devServer.DeleteProject(ctx, req)
+	// 	if err != nil {
+	// 		t.Errorf("failed to delete a project: %v", err)
+	// 	}
+	// })
 	t.Run("Try to delete the deleted project again", func(t *testing.T) {
 		md := metadata.MD{
 			"access_token": []string{accessToken},
@@ -86,7 +127,7 @@ func TestDevServer(t *testing.T) {
 		ctx := metadata.NewIncomingContext(context.Background(), md)
 
 		req := &devv1.DeleteProjectRequest{
-			Name: "int_test",
+			Name: projectName,
 		}
 
 		_, err := devServer.DeleteProject(ctx, req)
@@ -94,13 +135,19 @@ func TestDevServer(t *testing.T) {
 			t.Errorf("no error raised trying to delete the project")
 		}
 	})
-
 }
 
 func removeRows(db *sql.DB, testUserID int32) {
 	id64 := int64(testUserID)
 
-	stmt := t.Projects.
+	stmt := t.Locations.
+		DELETE().
+		WHERE(
+			t.Locations.Name.EQ(String("Imperial city sewers")),
+		)
+	stmt.Exec(db)
+
+	stmt = t.Projects.
 		DELETE().
 		WHERE(
 			t.Projects.OwnerID.EQ(Int(id64)),
@@ -115,7 +162,7 @@ func removeRows(db *sql.DB, testUserID int32) {
 	stmt.Exec(db)
 }
 
-func setupPsql(t *testing.T) (*DevServer, string) {
+func setupPsql(t *testing.T) (*DevServer, string, int32) {
 
 	config, err := configs.NewConfig("../../../configs")
 	if err != nil {
@@ -141,14 +188,11 @@ func setupPsql(t *testing.T) (*DevServer, string) {
 		log.Fatalf("failed to create jwtManager for testing: %q", err)
 	}
 
-	testAccessToken, err := testJWTManager.GenerateAccessToken(testUser.UserID)
-	if err != nil {
-		log.Fatalf("failed to create accesstoken for testing: %q", err)
-	}
+	testAccessToken, _ := testJWTManager.GenerateAccessToken(testUser.UserID)
 
 	psqlRepo := dev_psql_adapter.NewDevPSQLRepository(psqlDB)
 
 	// remove all affected database rows after the tests
 	t.Cleanup(func() { removeRows(psqlDB, testUser.UserID) })
-	return NewDevServer(psqlRepo, *testJWTManager), testAccessToken
+	return NewDevServer(psqlRepo, *testJWTManager), testAccessToken, testUser.UserID
 }

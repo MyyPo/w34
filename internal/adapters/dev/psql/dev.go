@@ -93,16 +93,16 @@ func (r DevPSQLRepository) CreateLocation(
 		SELECT(
 			t.Projects.ID,
 		).WHERE(
-		t.Projects.Name.EQ(j.String(projectName)).
+		t.Projects.OwnerID.EQ(j.Int(intOwnerID)).
 			AND(
-				t.Projects.OwnerID.EQ(j.Int(intOwnerID)),
+				t.Projects.Name.EQ(j.String(projectName)),
 			),
 	)
 
 	var lookupResult model.Projects
 	err = lookupProjectID.Query(r.db, &lookupResult)
 	if err != nil {
-		return model.Locations{}, nil
+		return model.Locations{}, err
 	}
 
 	stmt := t.Locations.
