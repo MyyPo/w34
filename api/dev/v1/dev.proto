@@ -26,3 +26,11 @@ message NewLocationRequest {
 message NewLocationResponse {
     
 }
+
+message NewSceneRequest {
+    string location = 1;
+    string options = 2;
+}
+message NewSceneResponse {
+    int32 scene_id = 1;
+}

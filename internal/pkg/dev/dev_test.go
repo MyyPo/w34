@@ -120,21 +120,21 @@ func TestDevServer(t *testing.T) {
 	// 		t.Errorf("failed to delete a project: %v", err)
 	// 	}
 	// })
-	t.Run("Try to delete the deleted project again", func(t *testing.T) {
-		md := metadata.MD{
-			"access_token": []string{accessToken},
-		}
-		ctx := metadata.NewIncomingContext(context.Background(), md)
+	// t.Run("Try to delete the deleted project again", func(t *testing.T) {
+	// 	md := metadata.MD{
+	// 		"access_token": []string{accessToken},
+	// 	}
+	// 	ctx := metadata.NewIncomingContext(context.Background(), md)
 
-		req := &devv1.DeleteProjectRequest{
-			Name: projectName,
-		}
+	// 	req := &devv1.DeleteProjectRequest{
+	// 		Name: projectName,
+	// 	}
 
-		_, err := devServer.DeleteProject(ctx, req)
-		if err == nil {
-			t.Errorf("no error raised trying to delete the project")
-		}
-	})
+	// 	_, err := devServer.DeleteProject(ctx, req)
+	// 	if err == nil {
+	// 		t.Errorf("no error raised trying to delete the project")
+	// 	}
+	// })
 }
 
 func removeRows(db *sql.DB, testUserID int32) {

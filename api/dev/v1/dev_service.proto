@@ -14,5 +14,10 @@ service DevService {
     // Used to create a location for the specified project
     // Every game scene has to be linked to a certain location
     rpc NewLocation (NewLocationRequest) returns (NewLocationResponse);
+
+    // Create a new scene linked to a certain location
+    // Scene is the basic unit of the developed game
+    // Containing player options and possibly encounters
+    rpc NewScene (NewSceneRequest) returns (NewSceneResponse);
 }
 

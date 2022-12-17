@@ -28,6 +28,10 @@ type DevServiceClient interface {
 	// Used to create a location for the specified project
 	// Every game scene has to be linked to a certain location
 	NewLocation(ctx context.Context, in *NewLocationRequest, opts ...grpc.CallOption) (*NewLocationResponse, error)
+	// Create a new scene linked to a certain location
+	// Scene is the basic unit of the developed game
+	// Containing player options and possibly encounters
+	NewScene(ctx context.Context, in *NewSceneRequest, opts ...grpc.CallOption) (*NewSceneResponse, error)
 }
 
 type devServiceClient struct {
@@ -65,6 +69,15 @@ func (c *devServiceClient) NewLocation(ctx context.Context, in *NewLocationReque
 	return out, nil
 }
 
+func (c *devServiceClient) NewScene(ctx context.Context, in *NewSceneRequest, opts ...grpc.CallOption) (*NewSceneResponse, error) {
+	out := new(NewSceneResponse)
+	err := c.cc.Invoke(ctx, "/dev.v1.DevService/NewScene", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DevServiceServer is the server API for DevService service.
 // All implementations must embed UnimplementedDevServiceServer
 // for forward compatibility
@@ -75,6 +88,10 @@ type DevServiceServer interface {
 	// Used to create a location for the specified project
 	// Every game scene has to be linked to a certain location
 	NewLocation(context.Context, *NewLocationRequest) (*NewLocationResponse, error)
+	// Create a new scene linked to a certain location
+	// Scene is the basic unit of the developed game
+	// Containing player options and possibly encounters
+	NewScene(context.Context, *NewSceneRequest) (*NewSceneResponse, error)
 	mustEmbedUnimplementedDevServiceServer()
 }
 
@@ -90,6 +107,9 @@ func (UnimplementedDevServiceServer) DeleteProject(context.Context, *DeleteProje
 }
 func (UnimplementedDevServiceServer) NewLocation(context.Context, *NewLocationRequest) (*NewLocationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NewLocation not implemented")
+}
+func (UnimplementedDevServiceServer) NewScene(context.Context, *NewSceneRequest) (*NewSceneResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NewScene not implemented")
 }
 func (UnimplementedDevServiceServer) mustEmbedUnimplementedDevServiceServer() {}
 
@@ -158,6 +178,24 @@ func _DevService_NewLocation_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DevService_NewScene_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NewSceneRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DevServiceServer).NewScene(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.v1.DevService/NewScene",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DevServiceServer).NewScene(ctx, req.(*NewSceneRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DevService_ServiceDesc is the grpc.ServiceDesc for DevService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -176,6 +214,10 @@ var DevService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "NewLocation",
 			Handler:    _DevService_NewLocation_Handler,
+		},
+		{
+			MethodName: "NewScene",
+			Handler:    _DevService_NewScene_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
