@@ -30,6 +30,7 @@ func TestDevServer(t *testing.T) {
 	devServer, testUserID := setupPsql(t)
 	strTestUserID := strconv.FormatInt(int64(testUserID), 10)
 	projectName := "int_test"
+	locationName := "Imperial city sewers"
 
 	t.Run("Valid create a new project", func(t *testing.T) {
 		md := metadata.MD{
@@ -74,7 +75,7 @@ func TestDevServer(t *testing.T) {
 
 		req := &devv1.NewLocationRequest{
 			ProjectName:  projectName,
-			LocationName: "Imperial city sewers",
+			LocationName: locationName,
 		}
 
 		_, err := devServer.CreateLocation(ctx, req)
@@ -99,6 +100,26 @@ func TestDevServer(t *testing.T) {
 		}
 
 		t.Log(err)
+	})
+	t.Run("Create a new scene", func(t *testing.T) {
+		md := metadata.MD{
+			"user_id": []string{strTestUserID},
+		}
+		ctx := metadata.NewIncomingContext(context.Background(), md)
+
+		req := &devv1.NewSceneRequest{
+			Project:  projectName,
+			Location: locationName,
+			Options: map[string]string{
+				"A1": "NEXT 3",
+				"A2": "ADD 19",
+			},
+		}
+
+		_, err := devServer.CreateScene(ctx, req)
+		if err != nil {
+			t.Errorf("unexpected error creating a valid scene: %v", err)
+		}
 	})
 
 	t.Run("Delete the created project", func(t *testing.T) {
@@ -131,6 +152,7 @@ func TestDevServer(t *testing.T) {
 			t.Errorf("no error raised trying to delete the project")
 		}
 	})
+
 }
 
 func removeRows(db *sql.DB, testUserID int32) {

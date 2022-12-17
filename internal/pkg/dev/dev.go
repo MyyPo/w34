@@ -80,7 +80,23 @@ func (s DevServer) CreateScene(
 	ctx context.Context,
 	req *devv1.NewSceneRequest,
 ) (*devv1.NewSceneResponse, error) {
-	return nil, nil
+	reqUserID, err := getUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	projectName := req.GetProject()
+	locationName := req.GetLocation()
+	sceneOptions := req.GetOptions()
+
+	res, err := s.repo.CreateScene(ctx, projectName, locationName, reqUserID, sceneOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	return &devv1.NewSceneResponse{
+		SceneId: res.ID,
+	}, nil
 }
 
 func getUserID(ctx context.Context) (string, error) {
