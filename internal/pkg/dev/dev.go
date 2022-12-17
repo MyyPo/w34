@@ -5,16 +5,19 @@ import (
 	"fmt"
 
 	devv1 "github.com/MyyPo/w34.Go/gen/go/dev/v1"
+	validator "github.com/MyyPo/w34.Go/internal/pkg/dev/validator"
 	"google.golang.org/grpc/metadata"
 )
 
 type DevServer struct {
-	repo Repository
+	repo      Repository
+	validator validator.DevValidator
 }
 
-func NewDevServer(repo Repository) *DevServer {
+func NewDevServer(repo Repository, validator validator.DevValidator) *DevServer {
 	return &DevServer{
-		repo: repo,
+		repo:      repo,
+		validator: validator,
 	}
 }
 
@@ -28,6 +31,10 @@ func (s DevServer) CreateProject(
 	}
 
 	projectName := req.GetName()
+
+	if err = s.validator.ValidateName(projectName); err != nil {
+		return nil, err
+	}
 
 	_, err = s.repo.CreateProject(ctx, projectName, reqUserID)
 	if err != nil {
@@ -67,6 +74,10 @@ func (s DevServer) CreateLocation(
 
 	projectName := req.GetProjectName()
 	locationName := req.GetLocationName()
+
+	if err = s.validator.ValidateName(locationName); err != nil {
+		return nil, err
+	}
 
 	_, err = s.repo.CreateLocation(ctx, projectName, locationName, reqUserID)
 	if err != nil {

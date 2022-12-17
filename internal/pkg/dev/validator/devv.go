@@ -6,33 +6,33 @@ import (
 )
 
 type DevValidator struct {
-	projectNameRgx *regexp.Regexp
+	nameRgx *regexp.Regexp
 }
 
-func NewDevValidator(projectNameRgxString string) (*DevValidator, error) {
-	if projectNameRgxString == "" {
-		projectNameRgxString = "^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$"
+func NewDevValidator(nameRgxString string) (*DevValidator, error) {
+	if nameRgxString == "" {
+		nameRgxString = "^[a-zA-Z0-9 ]+(?:-[a-zA-Z0-9]+)*$"
 	}
 
-	projectNameRgx, err := regexp.Compile(projectNameRgxString)
+	nameRgx, err := regexp.Compile(nameRgxString)
 	if err != nil {
 		return nil, err
 	}
 
 	return &DevValidator{
-		projectNameRgx: projectNameRgx,
+		nameRgx: nameRgx,
 	}, nil
 }
 
-func (v DevValidator) ValidateProjectName(projectName string) error {
-	if len(projectName) > 20 {
-		return fmt.Errorf("project name must be shorter than 20 symbols")
+func (v DevValidator) ValidateName(projectName string) error {
+	if len(projectName) > 50 {
+		return fmt.Errorf("name must be shorter than 20 symbols")
 	}
-	if len(projectName) < 3 {
-		return fmt.Errorf("project name must be longer than 2 symbols")
+	if len(projectName) == 0 {
+		return fmt.Errorf("name can't be empty")
 	}
-	if !v.projectNameRgx.MatchString(projectName) {
-		return fmt.Errorf("project name containts invalid characters")
+	if !v.nameRgx.MatchString(projectName) {
+		return fmt.Errorf("name containts invalid characters")
 	}
 
 	return nil

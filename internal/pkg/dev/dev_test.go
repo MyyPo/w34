@@ -13,6 +13,7 @@ import (
 	t "github.com/MyyPo/w34.Go/gen/psql/main/public/table"
 	"github.com/MyyPo/w34.Go/internal/adapters/auth/psql"
 	"github.com/MyyPo/w34.Go/internal/adapters/dev/psql"
+	validator "github.com/MyyPo/w34.Go/internal/pkg/dev/validator"
 	. "github.com/go-jet/jet/v2/postgres"
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc/metadata"
@@ -29,7 +30,7 @@ const (
 func TestDevServer(t *testing.T) {
 	devServer, testUserID := setupPsql(t)
 	strTestUserID := strconv.FormatInt(int64(testUserID), 10)
-	projectName := "int_test"
+	projectName := "integr test"
 	locationName := "Imperial city sewers"
 
 	t.Run("Valid create a new project", func(t *testing.T) {
@@ -181,7 +182,9 @@ func setupPsql(t *testing.T) (*DevServer, int32) {
 
 	psqlRepo := dev_psql_adapter.NewDevPSQLRepository(psqlDB)
 
+	devValidator, _ := validator.NewDevValidator("")
+
 	// remove all affected database rows after the tests
 	t.Cleanup(func() { removeRows(psqlDB, testUser.UserID) })
-	return NewDevServer(psqlRepo), testUser.UserID
+	return NewDevServer(psqlRepo, *devValidator), testUser.UserID
 }
