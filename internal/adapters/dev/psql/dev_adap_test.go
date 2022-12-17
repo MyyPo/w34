@@ -23,7 +23,7 @@ const (
 func TestDevAdapter(t *testing.T) {
 	var projectName = "test"
 	var locationName = "Test location"
-	// var projectID int32
+	var projectID int32
 	ownerID := "47"
 
 	psqlDB, err := sql.Open("postgres",
@@ -36,13 +36,13 @@ func TestDevAdapter(t *testing.T) {
 	psqlRepo := NewDevPSQLRepository(psqlDB)
 
 	t.Run("Valid create new project", func(t *testing.T) {
-		_, err := psqlRepo.CreateProject(context.Background(), projectName, ownerID)
+		got, err := psqlRepo.CreateProject(context.Background(), projectName, ownerID)
 		if err != nil {
 			t.Errorf("undexpected error: %v", err)
 
 		}
 
-		// projectID = got.ID
+		projectID = got.ID
 	})
 
 	t.Run("Valid create a new location", func(t *testing.T) {
@@ -53,22 +53,14 @@ func TestDevAdapter(t *testing.T) {
 
 		t.Log(got.ID)
 	})
-	t.Cleanup(func() { removeRows(psqlDB) })
+	t.Cleanup(func() { removeRows(psqlDB, projectID) })
 }
 
-func removeRows(db *sql.DB) {
+func removeRows(db *sql.DB, testProjID int32) {
 	stmt := t.Projects.
 		DELETE().
 		WHERE(
-			t.Projects.Name.NOT_EQ(j.String("")),
+			t.Projects.ID.EQ(j.Int32((testProjID))),
 		)
 	stmt.Exec(db)
-
-	stmt2 := t.Locations.
-		DELETE().
-		WHERE(
-			t.Locations.Name.NOT_EQ(j.String("")),
-		)
-	stmt2.Exec(db)
-
 }

@@ -49,9 +49,9 @@ func (r DevPSQLRepository) CreateProject(
 func (r DevPSQLRepository) DeleteProject(
 	ctx context.Context,
 	projectName string,
-	ownerID string,
+	reqUserID string,
 ) error {
-	intOwnerID, err := strconv.ParseInt(ownerID, 10, 32)
+	intReqUserID, err := strconv.ParseInt(reqUserID, 10, 32)
 	if err != nil {
 		return fmt.Errorf("internal error")
 	}
@@ -59,7 +59,7 @@ func (r DevPSQLRepository) DeleteProject(
 	stmt := t.Projects.
 		DELETE().
 		WHERE(
-			t.Projects.OwnerID.EQ(j.Int(intOwnerID)).
+			t.Projects.OwnerID.EQ(j.Int(intReqUserID)).
 				AND(
 					t.Projects.Name.EQ(j.String(projectName))),
 		)
@@ -82,9 +82,9 @@ func (r DevPSQLRepository) CreateLocation(
 	ctx context.Context,
 	projectName string,
 	locationName string,
-	ownerID string,
+	reqUserID string,
 ) (model.Locations, error) {
-	intOwnerID, err := strconv.ParseInt(ownerID, 10, 32)
+	intReqUserID, err := strconv.ParseInt(reqUserID, 10, 32)
 	if err != nil {
 		return model.Locations{}, fmt.Errorf("internal error")
 	}
@@ -93,7 +93,7 @@ func (r DevPSQLRepository) CreateLocation(
 		SELECT(
 			t.Projects.ID,
 		).WHERE(
-		t.Projects.OwnerID.EQ(j.Int(intOwnerID)).
+		t.Projects.OwnerID.EQ(j.Int(intReqUserID)).
 			AND(
 				t.Projects.Name.EQ(j.String(projectName)),
 			),
@@ -127,8 +127,11 @@ func (r DevPSQLRepository) CreateLocation(
 
 func (r DevPSQLRepository) CreateScene(
 	ctx context.Context,
+	projectName string,
 	locationName string,
+	reqUserID string,
 	sceneOptions string,
 ) (model.Scenes, error) {
+
 	return model.Scenes{}, nil
 }

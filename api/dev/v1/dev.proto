@@ -28,8 +28,9 @@ message NewLocationResponse {
 }
 
 message NewSceneRequest {
-    string location = 1;
-    string options = 2;
+    string project = 1;
+    string location = 2;
+    string options = 3;
 }
 message NewSceneResponse {
     int32 scene_id = 1;

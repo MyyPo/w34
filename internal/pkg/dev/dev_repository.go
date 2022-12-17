@@ -15,17 +15,19 @@ type Repository interface {
 	DeleteProject(
 		ctx context.Context,
 		projectName string,
-		ownerID string,
+		reqUserID string,
 	) error
 	CreateLocation(
 		ctx context.Context,
 		projectName string,
 		locationName string,
-		ownerID string,
+		reqUserID string,
 	) (model.Locations, error)
 	CreateScene(
 		ctx context.Context,
+		projectName string,
 		locationName string,
+		reqUserID string,
 		sceneOptions string,
 	) (model.Scenes, error)
 }
