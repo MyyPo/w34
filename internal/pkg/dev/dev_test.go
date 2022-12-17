@@ -101,58 +101,42 @@ func TestDevServer(t *testing.T) {
 		t.Log(err)
 	})
 
-	// will violate the the key constraint
+	t.Run("Delete the created project", func(t *testing.T) {
+		md := metadata.MD{
+			"user_id": []string{strTestUserID},
+		}
+		ctx := metadata.NewIncomingContext(context.Background(), md)
 
-	// t.Run("Delete the created project", func(t *testing.T) {
-	// 	md := metadata.MD{
-	// 		"access_token": []string{accessToken},
-	// 	}
-	// 	ctx := metadata.NewIncomingContext(context.Background(), md)
+		req := &devv1.DeleteProjectRequest{
+			Name: projectName,
+		}
 
-	// 	req := &devv1.DeleteProjectRequest{
-	// 		Name: projectName,
-	// 	}
+		_, err := devServer.DeleteProject(ctx, req)
+		if err != nil {
+			t.Errorf("failed to delete a project: %v", err)
+		}
+	})
+	t.Run("Try to delete the deleted project again", func(t *testing.T) {
+		md := metadata.MD{
+			"user_id": []string{strTestUserID},
+		}
+		ctx := metadata.NewIncomingContext(context.Background(), md)
 
-	// 	_, err := devServer.DeleteProject(ctx, req)
-	// 	if err != nil {
-	// 		t.Errorf("failed to delete a project: %v", err)
-	// 	}
-	// })
-	// t.Run("Try to delete the deleted project again", func(t *testing.T) {
-	// 	md := metadata.MD{
-	// 		"access_token": []string{accessToken},
-	// 	}
-	// 	ctx := metadata.NewIncomingContext(context.Background(), md)
+		req := &devv1.DeleteProjectRequest{
+			Name: projectName,
+		}
 
-	// 	req := &devv1.DeleteProjectRequest{
-	// 		Name: projectName,
-	// 	}
-
-	// 	_, err := devServer.DeleteProject(ctx, req)
-	// 	if err == nil {
-	// 		t.Errorf("no error raised trying to delete the project")
-	// 	}
-	// })
+		_, err := devServer.DeleteProject(ctx, req)
+		if err == nil {
+			t.Errorf("no error raised trying to delete the project")
+		}
+	})
 }
 
 func removeRows(db *sql.DB, testUserID int32) {
 	id64 := int64(testUserID)
 
-	stmt := t.Locations.
-		DELETE().
-		WHERE(
-			t.Locations.Name.EQ(String("Imperial city sewers")),
-		)
-	stmt.Exec(db)
-
-	stmt = t.Projects.
-		DELETE().
-		WHERE(
-			t.Projects.OwnerID.EQ(Int(id64)),
-		)
-	stmt.Exec(db)
-
-	stmt = t.Accounts.
+	stmt := t.Accounts.
 		DELETE().
 		WHERE(
 			t.Accounts.UserID.EQ(Int(id64)),
