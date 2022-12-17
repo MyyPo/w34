@@ -124,3 +124,11 @@ func (r DevPSQLRepository) CreateLocation(
 
 	return result, nil
 }
+
+func (r DevPSQLRepository) CreateScene(
+	ctx context.Context,
+	locationName string,
+	sceneOptions string,
+) (model.Scenes, error) {
+	return model.Scenes{}, nil
+}

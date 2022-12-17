@@ -5,19 +5,16 @@ import (
 	"fmt"
 
 	devv1 "github.com/MyyPo/w34.Go/gen/go/dev/v1"
-	"github.com/MyyPo/w34.Go/internal/jwt"
 	"google.golang.org/grpc/metadata"
 )
 
 type DevServer struct {
-	repo       Repository
-	jwtManager jwt.JWTManager
+	repo Repository
 }
 
-func NewDevServer(repo Repository, jwtManager jwt.JWTManager) *DevServer {
+func NewDevServer(repo Repository) *DevServer {
 	return &DevServer{
-		repo:       repo,
-		jwtManager: jwtManager,
+		repo: repo,
 	}
 }
 
@@ -30,21 +27,15 @@ func (s DevServer) CreateProject(
 	if !ok {
 		return nil, fmt.Errorf("metadata was not provided")
 	}
-	accessArr := md["access_token"]
-	if len(accessArr) == 0 {
-		return nil, fmt.Errorf("access token was not provided")
+	userIDArr := md["user_id"]
+	if len(userIDArr) == 0 {
+		return nil, fmt.Errorf("metadata was not provided")
 	}
-	accessToken := accessArr[0]
-
-	tokenClaims, err := s.jwtManager.ValidateJwtExtractClaims(accessToken, s.jwtManager.AccessPublicSignature)
-	if err != nil {
-		return nil, err
-	}
-	ownerID := tokenClaims.Subject
+	userID := userIDArr[0]
 
 	projectName := req.GetName()
 
-	_, err = s.repo.CreateProject(ctx, projectName, ownerID)
+	_, err := s.repo.CreateProject(ctx, projectName, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -60,21 +51,15 @@ func (s DevServer) DeleteProject(
 	if !ok {
 		return nil, fmt.Errorf("metadata was not provided")
 	}
-	accessArr := md["access_token"]
-	if len(accessArr) == 0 {
-		return nil, fmt.Errorf("access token was not provided")
+	userIDArr := md["user_id"]
+	if len(userIDArr) == 0 {
+		return nil, fmt.Errorf("metadata was not provided")
 	}
-	accessToken := accessArr[0]
-
-	tokenClaims, err := s.jwtManager.ValidateJwtExtractClaims(accessToken, s.jwtManager.AccessPublicSignature)
-	if err != nil {
-		return nil, err
-	}
-	ownerID := tokenClaims.Subject
+	userID := userIDArr[0]
 
 	projectName := req.GetName()
 
-	err = s.repo.DeleteProject(ctx, projectName, ownerID)
+	err := s.repo.DeleteProject(ctx, projectName, userID)
 	if err != nil {
 		return nil, err
 	}

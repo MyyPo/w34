@@ -9,12 +9,10 @@ import (
 	"log"
 	"testing"
 
-	"github.com/MyyPo/w34.Go/configs"
 	devv1 "github.com/MyyPo/w34.Go/gen/go/dev/v1"
 	t "github.com/MyyPo/w34.Go/gen/psql/main/public/table"
 	"github.com/MyyPo/w34.Go/internal/adapters/auth/psql"
 	"github.com/MyyPo/w34.Go/internal/adapters/dev/psql"
-	"github.com/MyyPo/w34.Go/internal/jwt"
 	. "github.com/go-jet/jet/v2/postgres"
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc/metadata"
@@ -29,12 +27,13 @@ const (
 )
 
 func TestDevServer(t *testing.T) {
-	devServer, accessToken, testUserID := setupPsql(t)
+	devServer, testUserID := setupPsql(t)
+	strTestUserID := strconv.FormatInt(int64(testUserID), 10)
 	projectName := "int_test"
 
 	t.Run("Valid create a new project", func(t *testing.T) {
 		md := metadata.MD{
-			"access_token": []string{accessToken},
+			"user_id": []string{strTestUserID},
 		}
 		ctx := metadata.NewIncomingContext(context.Background(), md)
 
@@ -51,7 +50,7 @@ func TestDevServer(t *testing.T) {
 	})
 	t.Run("Try to create a new project with the same name", func(t *testing.T) {
 		md := metadata.MD{
-			"access_token": []string{accessToken},
+			"user_id": []string{strTestUserID},
 		}
 		ctx := metadata.NewIncomingContext(context.Background(), md)
 
@@ -67,7 +66,6 @@ func TestDevServer(t *testing.T) {
 
 	})
 	t.Run("Create a new location", func(t *testing.T) {
-		strTestUserID := strconv.FormatInt(int64(testUserID), 10)
 
 		md := metadata.MD{
 			"user_id": []string{strTestUserID},
@@ -162,13 +160,7 @@ func removeRows(db *sql.DB, testUserID int32) {
 	stmt.Exec(db)
 }
 
-func setupPsql(t *testing.T) (*DevServer, string, int32) {
-
-	config, err := configs.NewConfig("../../../configs")
-	if err != nil {
-		t.Errorf("failed to load config: %q", err)
-	}
-
+func setupPsql(t *testing.T) (*DevServer, int32) {
 	psqlDB, err := sql.Open("postgres",
 		fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 			host, port, user, password, dbname))
@@ -181,18 +173,9 @@ func setupPsql(t *testing.T) (*DevServer, string, int32) {
 		log.Fatalf("failed to create test user for testing: %q", err)
 	}
 
-	testJWTManager, err := jwt.NewJWTManager("../../../configs/rsa", "../../../configs/rsa.pub",
-		"../../../configs/refresh_rsa", "../../../configs/refresh_rsa.pub",
-		config.AccessTokenDuration, config.RefreshTokenDuration)
-	if err != nil {
-		log.Fatalf("failed to create jwtManager for testing: %q", err)
-	}
-
-	testAccessToken, _ := testJWTManager.GenerateAccessToken(testUser.UserID)
-
 	psqlRepo := dev_psql_adapter.NewDevPSQLRepository(psqlDB)
 
 	// remove all affected database rows after the tests
 	t.Cleanup(func() { removeRows(psqlDB, testUser.UserID) })
-	return NewDevServer(psqlRepo, *testJWTManager), testAccessToken, testUser.UserID
+	return NewDevServer(psqlRepo), testUser.UserID
 }

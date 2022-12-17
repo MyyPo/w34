@@ -23,4 +23,9 @@ type Repository interface {
 		locationName string,
 		ownerID string,
 	) (model.Locations, error)
+	CreateScene(
+		ctx context.Context,
+		locationName string,
+		sceneOptions string,
+	) (model.Scenes, error)
 }
