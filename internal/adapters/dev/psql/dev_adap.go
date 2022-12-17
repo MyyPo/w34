@@ -3,6 +3,7 @@ package dev_psql_adapter
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -130,8 +131,48 @@ func (r DevPSQLRepository) CreateScene(
 	projectName string,
 	locationName string,
 	reqUserID string,
-	sceneOptions string,
+	sceneOptions map[string]string,
 ) (model.Scenes, error) {
+	intReqUserID, err := strconv.ParseInt(reqUserID, 10, 32)
+	if err != nil {
+		return model.Scenes{}, fmt.Errorf("internal error")
+	}
 
-	return model.Scenes{}, nil
+	lookupLocationID := j.SELECT(
+		t.Locations.ID,
+	).FROM(
+		t.Locations.
+			INNER_JOIN(t.Projects, t.Projects.Name.EQ(j.String(projectName)).
+				AND(t.Projects.OwnerID.EQ(j.Int(intReqUserID)))),
+	)
+
+	var lookupResult model.Locations
+	err = lookupLocationID.Query(r.db, &lookupResult)
+	if err != nil {
+		return model.Scenes{}, err
+	}
+
+	jsonSceneOptions, err := json.Marshal(sceneOptions)
+	if err != nil {
+		return model.Scenes{}, err
+	}
+
+	stmt := t.Scenes.INSERT(
+		t.Scenes.LocationID,
+		t.Scenes.Options,
+	).VALUES(
+		lookupLocationID,
+		jsonSceneOptions,
+	).RETURNING(
+		t.Scenes.ID,
+		t.Scenes.Options,
+	)
+
+	var result model.Scenes
+	err = stmt.Query(r.db, &result)
+	if err != nil {
+		return model.Scenes{}, err
+	}
+
+	return result, nil
 }

@@ -28,6 +28,6 @@ type Repository interface {
 		projectName string,
 		locationName string,
 		reqUserID string,
-		sceneOptions string,
+		sceneOptions map[string]string,
 	) (model.Scenes, error)
 }

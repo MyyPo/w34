@@ -30,7 +30,7 @@ message NewLocationResponse {
 message NewSceneRequest {
     string project = 1;
     string location = 2;
-    string options = 3;
+    map<string, string> options = 3;
 }
 message NewSceneResponse {
     int32 scene_id = 1;

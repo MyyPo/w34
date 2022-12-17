@@ -76,6 +76,13 @@ func (s DevServer) CreateLocation(
 	return &devv1.NewLocationResponse{}, nil
 }
 
+func (s DevServer) CreateScene(
+	ctx context.Context,
+	req *devv1.NewSceneRequest,
+) (*devv1.NewSceneResponse, error) {
+	return nil, nil
+}
+
 func getUserID(ctx context.Context) (string, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {

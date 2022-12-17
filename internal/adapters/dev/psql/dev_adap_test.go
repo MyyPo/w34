@@ -53,6 +53,17 @@ func TestDevAdapter(t *testing.T) {
 
 		t.Log(got.ID)
 	})
+
+	t.Run("Create a scene", func(t *testing.T) {
+		got, err := psqlRepo.CreateScene(context.Background(), projectName, locationName, ownerID, map[string]string{
+			"A1": "ADD 15",
+			"A2": "NEXT 66",
+		})
+		if err != nil {
+			t.Errorf("failed to create a valid scene: %v", err)
+		}
+		t.Logf("got json: %v", got.Options)
+	})
 	t.Cleanup(func() { removeRows(psqlDB, projectID) })
 }
 
