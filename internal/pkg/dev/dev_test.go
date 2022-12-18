@@ -33,12 +33,12 @@ func TestDevServer(t *testing.T) {
 	projectName := "integr test"
 	locationName := "Imperial city sewers"
 
-	t.Run("Valid create a new project", func(t *testing.T) {
-		md := metadata.MD{
-			"user_id": []string{strTestUserID},
-		}
-		ctx := metadata.NewIncomingContext(context.Background(), md)
+	md := metadata.MD{
+		"user_id": []string{strTestUserID},
+	}
+	ctx := metadata.NewIncomingContext(context.Background(), md)
 
+	t.Run("Valid create a new project", func(t *testing.T) {
 		req := &devv1.NewProjectRequest{
 			Name:   projectName,
 			Public: true,
@@ -51,11 +51,6 @@ func TestDevServer(t *testing.T) {
 
 	})
 	t.Run("Try to create a new project with the same name", func(t *testing.T) {
-		md := metadata.MD{
-			"user_id": []string{strTestUserID},
-		}
-		ctx := metadata.NewIncomingContext(context.Background(), md)
-
 		req := &devv1.NewProjectRequest{
 			Name:   projectName,
 			Public: true,
@@ -68,12 +63,6 @@ func TestDevServer(t *testing.T) {
 
 	})
 	t.Run("Create a new location", func(t *testing.T) {
-
-		md := metadata.MD{
-			"user_id": []string{strTestUserID},
-		}
-		ctx := metadata.NewIncomingContext(context.Background(), md)
-
 		req := &devv1.NewLocationRequest{
 			ProjectName:  projectName,
 			LocationName: locationName,
@@ -103,11 +92,6 @@ func TestDevServer(t *testing.T) {
 		t.Log(err)
 	})
 	t.Run("Create a new scene", func(t *testing.T) {
-		md := metadata.MD{
-			"user_id": []string{strTestUserID},
-		}
-		ctx := metadata.NewIncomingContext(context.Background(), md)
-
 		req := &devv1.NewSceneRequest{
 			Project:  projectName,
 			Location: locationName,
@@ -124,11 +108,6 @@ func TestDevServer(t *testing.T) {
 	})
 
 	t.Run("Delete the created project", func(t *testing.T) {
-		md := metadata.MD{
-			"user_id": []string{strTestUserID},
-		}
-		ctx := metadata.NewIncomingContext(context.Background(), md)
-
 		req := &devv1.DeleteProjectRequest{
 			Name: projectName,
 		}
@@ -139,11 +118,6 @@ func TestDevServer(t *testing.T) {
 		}
 	})
 	t.Run("Try to delete the deleted project again", func(t *testing.T) {
-		md := metadata.MD{
-			"user_id": []string{strTestUserID},
-		}
-		ctx := metadata.NewIncomingContext(context.Background(), md)
-
 		req := &devv1.DeleteProjectRequest{
 			Name: projectName,
 		}
