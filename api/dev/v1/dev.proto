@@ -35,3 +35,12 @@ message NewSceneRequest {
 message NewSceneResponse {
     int32 scene_id = 1;
 }
+
+message GetLocationScenesRequest {
+    string project = 1;
+    string location = 2;
+}
+
+message GetLocationScenesResponse {
+
+}

@@ -32,6 +32,8 @@ type DevServiceClient interface {
 	// Scene is the basic unit of the developed game
 	// Containing player options and possibly encounters
 	NewScene(ctx context.Context, in *NewSceneRequest, opts ...grpc.CallOption) (*NewSceneResponse, error)
+	// Returns all scenes linked to a certain location
+	GetLocationScenes(ctx context.Context, in *GetLocationScenesRequest, opts ...grpc.CallOption) (*GetLocationScenesResponse, error)
 }
 
 type devServiceClient struct {
@@ -78,6 +80,15 @@ func (c *devServiceClient) NewScene(ctx context.Context, in *NewSceneRequest, op
 	return out, nil
 }
 
+func (c *devServiceClient) GetLocationScenes(ctx context.Context, in *GetLocationScenesRequest, opts ...grpc.CallOption) (*GetLocationScenesResponse, error) {
+	out := new(GetLocationScenesResponse)
+	err := c.cc.Invoke(ctx, "/dev.v1.DevService/GetLocationScenes", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DevServiceServer is the server API for DevService service.
 // All implementations must embed UnimplementedDevServiceServer
 // for forward compatibility
@@ -92,6 +103,8 @@ type DevServiceServer interface {
 	// Scene is the basic unit of the developed game
 	// Containing player options and possibly encounters
 	NewScene(context.Context, *NewSceneRequest) (*NewSceneResponse, error)
+	// Returns all scenes linked to a certain location
+	GetLocationScenes(context.Context, *GetLocationScenesRequest) (*GetLocationScenesResponse, error)
 	mustEmbedUnimplementedDevServiceServer()
 }
 
@@ -110,6 +123,9 @@ func (UnimplementedDevServiceServer) NewLocation(context.Context, *NewLocationRe
 }
 func (UnimplementedDevServiceServer) NewScene(context.Context, *NewSceneRequest) (*NewSceneResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NewScene not implemented")
+}
+func (UnimplementedDevServiceServer) GetLocationScenes(context.Context, *GetLocationScenesRequest) (*GetLocationScenesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLocationScenes not implemented")
 }
 func (UnimplementedDevServiceServer) mustEmbedUnimplementedDevServiceServer() {}
 
@@ -196,6 +212,24 @@ func _DevService_NewScene_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DevService_GetLocationScenes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLocationScenesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DevServiceServer).GetLocationScenes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.v1.DevService/GetLocationScenes",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DevServiceServer).GetLocationScenes(ctx, req.(*GetLocationScenesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DevService_ServiceDesc is the grpc.ServiceDesc for DevService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -218,6 +252,10 @@ var DevService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "NewScene",
 			Handler:    _DevService_NewScene_Handler,
+		},
+		{
+			MethodName: "GetLocationScenes",
+			Handler:    _DevService_GetLocationScenes_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
