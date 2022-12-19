@@ -133,21 +133,7 @@ func (r DevPSQLRepository) CreateScene(
 	reqUserID string,
 	sceneOptions map[string]string,
 ) (model.Scenes, error) {
-	intReqUserID, err := strconv.ParseInt(reqUserID, 10, 32)
-	if err != nil {
-		return model.Scenes{}, fmt.Errorf("internal error")
-	}
-
-	lookupLocationID := j.SELECT(
-		t.Locations.ID,
-	).FROM(
-		t.Locations.
-			INNER_JOIN(t.Projects, t.Projects.Name.EQ(j.String(projectName)).
-				AND(t.Projects.OwnerID.EQ(j.Int(intReqUserID)))),
-	)
-
-	var lookupResult model.Locations
-	err = lookupLocationID.Query(r.db, &lookupResult)
+	lookupLocation, err := r.getLocationID(projectName, locationName, reqUserID)
 	if err != nil {
 		return model.Scenes{}, err
 	}
@@ -161,7 +147,7 @@ func (r DevPSQLRepository) CreateScene(
 		t.Scenes.LocationID,
 		t.Scenes.Options,
 	).VALUES(
-		lookupLocationID,
+		lookupLocation.ID,
 		jsonSceneOptions,
 	).RETURNING(
 		t.Scenes.ID,
@@ -175,4 +161,59 @@ func (r DevPSQLRepository) CreateScene(
 	}
 
 	return result, nil
+}
+
+func (r DevPSQLRepository) GetLocationScenes(
+	ctx context.Context,
+	projectName string,
+	locationName string,
+	reqUserID string,
+) ([]model.Scenes, error) {
+	lookupLocation, err := r.getLocationID(projectName, locationName, reqUserID)
+	if err != nil {
+		return []model.Scenes{}, err
+	}
+
+	stmt := t.Scenes.SELECT(
+		t.Scenes.ID,
+		t.Scenes.Options,
+	).WHERE(
+		t.Scenes.LocationID.EQ(j.Int(int64(lookupLocation.ID))),
+	)
+	var result []model.Scenes
+	err = stmt.Query(r.db, &result)
+	if err != nil {
+		return []model.Scenes{}, err
+	}
+
+	return result, nil
+}
+
+// Util method giving access to location id by name
+func (r DevPSQLRepository) getLocationID(
+	projectName string,
+	locationName string,
+	reqUserID string,
+) (model.Locations, error) {
+	intReqUserID, err := strconv.ParseInt(reqUserID, 10, 32)
+	if err != nil {
+		return model.Locations{}, fmt.Errorf("internal error")
+	}
+
+	stmt := j.SELECT(
+		t.Locations.ID,
+	).FROM(
+		t.Locations.
+			INNER_JOIN(t.Projects, t.Projects.Name.EQ(j.String(projectName)).
+				AND(t.Projects.OwnerID.EQ(j.Int(intReqUserID))).
+				AND(t.Locations.Name.EQ(j.String(locationName))),
+			),
+	)
+	var lookupResult model.Locations
+	err = stmt.Query(r.db, &lookupResult)
+	if err != nil {
+		return model.Locations{}, err
+	}
+
+	return lookupResult, err
 }

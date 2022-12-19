@@ -30,4 +30,10 @@ type Repository interface {
 		reqUserID string,
 		sceneOptions map[string]string,
 	) (model.Scenes, error)
+	GetLocationScenes(
+		ctx context.Context,
+		projectName string,
+		locationName string,
+		reqUserID string,
+	) ([]model.Scenes, error)
 }

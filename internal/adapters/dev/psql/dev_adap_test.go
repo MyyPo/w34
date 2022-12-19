@@ -64,6 +64,16 @@ func TestDevAdapter(t *testing.T) {
 		}
 		t.Logf("got json: %v", got.Options)
 	})
+
+	t.Run("Get all scenes in created location", func(t *testing.T) {
+		got, err := psqlRepo.GetLocationScenes(context.Background(), projectName, locationName, ownerID)
+		if err != nil {
+			t.Errorf("failed to retrieve location scenes: %v", err)
+		}
+
+		t.Logf("got locs: %v", got)
+	})
+
 	t.Cleanup(func() { removeRows(psqlDB, projectID) })
 }
 
