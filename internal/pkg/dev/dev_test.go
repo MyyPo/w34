@@ -106,6 +106,9 @@ func TestDevServer(t *testing.T) {
 			t.Errorf("unexpected error creating a valid scene: %v", err)
 		}
 	})
+	t.Run("Get all location scenes", func(t *testing.T) {
+
+	})
 
 	t.Run("Delete the created project", func(t *testing.T) {
 		req := &devv1.DeleteProjectRequest{
