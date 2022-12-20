@@ -134,6 +134,7 @@ func (r DevPSQLRepository) CreateScene(
 	projectName string,
 	locationName string,
 	reqUserID string,
+	ingameSceneID int32,
 	sceneOptions map[string]string,
 ) (model.Scenes, error) {
 	lookupLocation, err := r.getLocationID(projectName, locationName, reqUserID)
@@ -148,12 +149,15 @@ func (r DevPSQLRepository) CreateScene(
 
 	stmt := t.Scenes.INSERT(
 		t.Scenes.LocationID,
+		t.Scenes.IngameID,
 		t.Scenes.Options,
 	).VALUES(
 		lookupLocation.ID,
+		ingameSceneID,
 		jsonSceneOptions,
 	).RETURNING(
 		t.Scenes.ID,
+		t.Scenes.IngameID,
 		t.Scenes.Options,
 	)
 

@@ -9,6 +9,7 @@ package model
 
 type Scenes struct {
 	ID         int32 `sql:"primary_key"`
+	IngameID   int32
 	LocationID int32
 	Options    string
 }

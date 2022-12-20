@@ -56,7 +56,7 @@ func TestDevAdapter(t *testing.T) {
 	})
 
 	t.Run("Create a scene", func(t *testing.T) {
-		got, err := psqlRepo.CreateScene(context.Background(), projectName, locationName, ownerID, map[string]string{
+		got, err := psqlRepo.CreateScene(context.Background(), projectName, locationName, ownerID, 1, map[string]string{
 			"A1": "ADD 15",
 			"A2": "NEXT 66",
 		})
@@ -68,7 +68,7 @@ func TestDevAdapter(t *testing.T) {
 		sceneID = got.ID
 	})
 	t.Run("Create another scene", func(t *testing.T) {
-		got, err := psqlRepo.CreateScene(context.Background(), projectName, locationName, ownerID, map[string]string{
+		got, err := psqlRepo.CreateScene(context.Background(), projectName, locationName, ownerID, 2, map[string]string{
 			"1": "ADD 15",
 			"2": "NEXT 66",
 		})
@@ -76,6 +76,15 @@ func TestDevAdapter(t *testing.T) {
 			t.Errorf("failed to create a valid scene: %v", err)
 		}
 		t.Logf("got json: %v", got.Options)
+	})
+	t.Run("Try to create a scene with an ingame scene id occupied for this location", func(t *testing.T) {
+		_, err := psqlRepo.CreateScene(context.Background(), projectName, locationName, ownerID, 2, map[string]string{
+			"1": "ADD 15",
+			"2": "NEXT 66",
+		})
+		if err == nil {
+			t.Errorf("created a scene with an occupied location unique id")
+		}
 	})
 
 	t.Run("Get all scenes in created location", func(t *testing.T) {

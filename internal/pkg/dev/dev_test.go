@@ -95,6 +95,7 @@ func TestDevServer(t *testing.T) {
 		req := &devv1.NewSceneRequest{
 			Project:  projectName,
 			Location: locationName,
+			IngameId: 1,
 			Options: map[string]string{
 				"A1": "NEXT 3",
 				"A2": "ADD 19",

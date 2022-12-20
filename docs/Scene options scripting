@@ -2,6 +2,6 @@ hot draft
 
 
 SCENE OPTIONS EXAMPLE
-"A" - always available
+Number-only key - always available
 
-["A": {"ADD": {"Fork": 3}, "PROMPT": "Always"}, "T=confirmed": {"ADD": {"Spoon": 3, "Fork": 1}, "PROMPT": "Seen only with tag confirmed"}]
+["0": {"ADD": {"Fork": 3}, "PROMPT": "Always"}, "T=confirmed": {"ADD": {"Spoon": 3, "Fork": 1}, "PROMPT": "Seen only with tag confirmed"}]

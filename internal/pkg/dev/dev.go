@@ -100,9 +100,10 @@ func (s DevServer) CreateScene(
 
 	projectName := req.GetProject()
 	locationName := req.GetLocation()
+	ingameSceneID := req.GetIngameId()
 	sceneOptions := req.GetOptions()
 
-	res, err := s.repo.CreateScene(ctx, projectName, locationName, reqUserID, sceneOptions)
+	res, err := s.repo.CreateScene(ctx, projectName, locationName, reqUserID, ingameSceneID, sceneOptions)
 	if err != nil {
 		return nil, err
 	}

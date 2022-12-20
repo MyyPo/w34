@@ -29,6 +29,7 @@ type Repository interface {
 		projectName string,
 		locationName string,
 		reqUserID string,
+		ingameSceneID int32,
 		sceneOptions map[string]string,
 	) (model.Scenes, error)
 	DeleteScene(

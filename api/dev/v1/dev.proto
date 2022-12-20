@@ -27,7 +27,8 @@ message NewLocationResponse {
 message NewSceneRequest {
     string project = 1;
     string location = 2;
-    map<string, string> options = 3;
+    int32 ingame_id = 3;
+    map<string, string> options = 4;
 }
 message NewSceneResponse {
     int32 scene_id = 1;
@@ -49,7 +50,8 @@ message GetLocationScenesResponse {
     repeated Scene scene = 1; 
 }
 message Scene {
-    string options = 1;
+    int32 ingame_id = 1;
+    string options = 2;
 }
 
 message GetProjectRequest {

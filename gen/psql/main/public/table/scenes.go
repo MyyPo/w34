@@ -18,6 +18,7 @@ type scenesTable struct {
 
 	//Columns
 	ID         postgres.ColumnInteger
+	IngameID   postgres.ColumnInteger
 	LocationID postgres.ColumnInteger
 	Options    postgres.ColumnString
 
@@ -61,10 +62,11 @@ func newScenesTable(schemaName, tableName, alias string) *ScenesTable {
 func newScenesTableImpl(schemaName, tableName, alias string) scenesTable {
 	var (
 		IDColumn         = postgres.IntegerColumn("id")
+		IngameIDColumn   = postgres.IntegerColumn("ingame_id")
 		LocationIDColumn = postgres.IntegerColumn("location_id")
 		OptionsColumn    = postgres.StringColumn("options")
-		allColumns       = postgres.ColumnList{IDColumn, LocationIDColumn, OptionsColumn}
-		mutableColumns   = postgres.ColumnList{LocationIDColumn, OptionsColumn}
+		allColumns       = postgres.ColumnList{IDColumn, IngameIDColumn, LocationIDColumn, OptionsColumn}
+		mutableColumns   = postgres.ColumnList{IngameIDColumn, LocationIDColumn, OptionsColumn}
 	)
 
 	return scenesTable{
@@ -72,6 +74,7 @@ func newScenesTableImpl(schemaName, tableName, alias string) scenesTable {
 
 		//Columns
 		ID:         IDColumn,
+		IngameID:   IngameIDColumn,
 		LocationID: LocationIDColumn,
 		Options:    OptionsColumn,
 
