@@ -89,7 +89,7 @@ func TestDevAdapter(t *testing.T) {
 	})
 
 	t.Run("Get ownerID of a scene using utility function", func(t *testing.T) {
-		got, err := psqlRepo.getSceneOwnerID(context.Background(), sceneID, projectName, locationName)
+		got, err := psqlRepo.getSceneOwnerID(context.Background(), projectName, locationName, sceneID)
 		if err != nil {
 			t.Errorf("failed to acquire scene's ownerID: %v", err)
 		}
@@ -97,11 +97,24 @@ func TestDevAdapter(t *testing.T) {
 		t.Logf("owner id: %v", got)
 	})
 	t.Run("Try to get ownerID passing incorrect projectName", func(t *testing.T) {
-		_, err := psqlRepo.getSceneOwnerID(context.Background(), sceneID, "incorrect", locationName)
+		_, err := psqlRepo.getSceneOwnerID(context.Background(), "incorrect", locationName, sceneID)
 		if err == nil {
 			t.Errorf("didn't raise error for non-existing project")
 		}
 
+	})
+
+	t.Run("Delete a scene", func(t *testing.T) {
+		err := psqlRepo.DeleteScene(context.Background(), projectName, locationName, ownerID, sceneID)
+		if err != nil {
+			t.Errorf("unexpected error trying to delete a scene")
+		}
+	})
+	t.Run("try to delete a scene with invalid userID", func(t *testing.T) {
+		err := psqlRepo.DeleteScene(context.Background(), projectName, locationName, "1337", sceneID)
+		if err == nil {
+			t.Errorf("expected to raise error")
+		}
 	})
 
 	t.Cleanup(func() { removeRows(psqlDB, projectID) })

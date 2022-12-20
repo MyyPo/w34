@@ -35,7 +35,8 @@ type Repository interface {
 		projectName string,
 		locationName string,
 		reqUserID string,
-	) (model.Scenes, error)
+		sceneID int32,
+	) error
 	GetLocationScenes(
 		ctx context.Context,
 		projectName string,

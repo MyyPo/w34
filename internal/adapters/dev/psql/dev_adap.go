@@ -168,21 +168,43 @@ func (r DevPSQLRepository) DeleteScene(
 	projectName string,
 	locationName string,
 	reqUserID string,
-) (model.Scenes, error) {
+	sceneID int32,
+) error {
+	project, err := r.getSceneOwnerID(ctx, projectName, locationName, sceneID)
+	if err != nil {
+		return err
+	}
+	intReqUserID, err := strconv.ParseInt(reqUserID, 10, 32)
+	if err != nil {
+		return fmt.Errorf("internal error")
+	}
+	// Return error if user that doesn't own the project tries to delete a scene
+	if int32(intReqUserID) != project.OwnerID {
+		return fmt.Errorf("not authorized to delete the scene")
+	}
 
-	// stmt := t.Scenes.
-	// DELETE().
-	// WHERE(
-	// 	t.Scenes.ID.EQ()
-	// )
+	stmt := t.Scenes.
+		DELETE().
+		WHERE(
+			t.Scenes.ID.EQ(j.Int32(sceneID)),
+		)
+	res, err := stmt.Exec(r.db)
+	if err != nil {
+		return err
+	}
 
-	return model.Scenes{}, nil
+	rowsDeleted, _ := res.RowsAffected()
+	if rowsDeleted == 0 {
+		return fmt.Errorf("there is no such scene")
+	}
+
+	return nil
 }
 func (r DevPSQLRepository) getSceneOwnerID(
 	ctx context.Context,
-	sceneID int32,
 	projectName string,
 	locationName string,
+	sceneID int32,
 ) (model.Projects, error) {
 	stmt := j.
 		SELECT(
