@@ -11,6 +11,7 @@ type Repository interface {
 		ctx context.Context,
 		projectName string,
 		ownerID string,
+		isPublic bool,
 	) (model.Projects, error)
 	DeleteProject(
 		ctx context.Context,

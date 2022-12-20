@@ -41,20 +41,19 @@ func TestDevServer(t *testing.T) {
 
 	t.Run("Valid create a new project", func(t *testing.T) {
 		req := &devv1.NewProjectRequest{
-			Name:   projectName,
-			Public: true,
+			Name:     projectName,
+			IsPublic: true,
 		}
 
 		_, err := devServer.CreateProject(ctx, req)
 		if err != nil {
 			t.Errorf("error creating project: %v", err)
 		}
-
 	})
 	t.Run("Try to create a new project with the same name", func(t *testing.T) {
 		req := &devv1.NewProjectRequest{
-			Name:   projectName,
-			Public: true,
+			Name:     projectName,
+			IsPublic: true,
 		}
 
 		_, err := devServer.CreateProject(ctx, req)

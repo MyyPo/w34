@@ -20,6 +20,7 @@ type projectsTable struct {
 	ID        postgres.ColumnInteger
 	Name      postgres.ColumnString
 	OwnerID   postgres.ColumnInteger
+	IsPublic  postgres.ColumnBool
 	CreatedAt postgres.ColumnTimestamp
 	LastEdit  postgres.ColumnTimestamp
 
@@ -65,10 +66,11 @@ func newProjectsTableImpl(schemaName, tableName, alias string) projectsTable {
 		IDColumn        = postgres.IntegerColumn("id")
 		NameColumn      = postgres.StringColumn("name")
 		OwnerIDColumn   = postgres.IntegerColumn("owner_id")
+		IsPublicColumn  = postgres.BoolColumn("is_public")
 		CreatedAtColumn = postgres.TimestampColumn("created_at")
 		LastEditColumn  = postgres.TimestampColumn("last_edit")
-		allColumns      = postgres.ColumnList{IDColumn, NameColumn, OwnerIDColumn, CreatedAtColumn, LastEditColumn}
-		mutableColumns  = postgres.ColumnList{NameColumn, OwnerIDColumn, CreatedAtColumn, LastEditColumn}
+		allColumns      = postgres.ColumnList{IDColumn, NameColumn, OwnerIDColumn, IsPublicColumn, CreatedAtColumn, LastEditColumn}
+		mutableColumns  = postgres.ColumnList{NameColumn, OwnerIDColumn, IsPublicColumn, CreatedAtColumn, LastEditColumn}
 	)
 
 	return projectsTable{
@@ -78,6 +80,7 @@ func newProjectsTableImpl(schemaName, tableName, alias string) projectsTable {
 		ID:        IDColumn,
 		Name:      NameColumn,
 		OwnerID:   OwnerIDColumn,
+		IsPublic:  IsPublicColumn,
 		CreatedAt: CreatedAtColumn,
 		LastEdit:  LastEditColumn,
 

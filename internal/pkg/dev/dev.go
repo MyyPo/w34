@@ -32,12 +32,13 @@ func (s DevServer) CreateProject(
 	}
 
 	projectName := req.GetName()
+	isPublic := req.GetIsPublic()
 
 	if err = s.validator.ValidateName(projectName); err != nil {
 		return nil, err
 	}
 
-	_, err = s.repo.CreateProject(ctx, projectName, reqUserID)
+	_, err = s.repo.CreateProject(ctx, projectName, reqUserID, isPublic)
 	if err != nil {
 		return nil, err
 	}

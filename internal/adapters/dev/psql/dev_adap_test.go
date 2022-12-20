@@ -37,7 +37,7 @@ func TestDevAdapter(t *testing.T) {
 	psqlRepo := NewDevPSQLRepository(psqlDB)
 
 	t.Run("Valid create new project", func(t *testing.T) {
-		got, err := psqlRepo.CreateProject(context.Background(), projectName, ownerID)
+		got, err := psqlRepo.CreateProject(context.Background(), projectName, ownerID, true)
 		if err != nil {
 			t.Errorf("undexpected error: %v", err)
 

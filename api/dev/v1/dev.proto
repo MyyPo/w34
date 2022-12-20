@@ -6,7 +6,7 @@ option go_package = "github.com/MyyPo/w34.Go/gen/go/dev/v1;devpb";
 
 message NewProjectRequest {
     string name = 1;
-    bool public = 2;  
+    bool is_public = 2;  
 }
 message NewProjectResponse {
 }

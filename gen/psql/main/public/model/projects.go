@@ -15,6 +15,7 @@ type Projects struct {
 	ID        int32 `sql:"primary_key"`
 	Name      string
 	OwnerID   int32
+	IsPublic  *bool
 	CreatedAt *time.Time
 	LastEdit  *time.Time
 }

@@ -24,15 +24,18 @@ func (r DevPSQLRepository) CreateProject(
 	ctx context.Context,
 	projectName string,
 	ownerID string,
+	isPublic bool,
 ) (model.Projects, error) {
 
 	stmt := t.Projects.
 		INSERT(
 			t.Projects.Name,
 			t.Projects.OwnerID,
+			t.Projects.IsPublic,
 		).VALUES(
 		projectName,
 		ownerID,
+		isPublic,
 	).RETURNING(
 		t.Projects.ID,
 		t.Projects.Name,
