@@ -24,7 +24,6 @@ message NewLocationRequest {
     string location_name = 2;
 }
 message NewLocationResponse {
-    
 }
 
 message NewSceneRequest {
@@ -34,6 +33,13 @@ message NewSceneRequest {
 }
 message NewSceneResponse {
     int32 scene_id = 1;
+}
+
+message DeleteSceneRequest {
+    string project = 1;
+    string location = 2;
+}
+message DeleteSceneResponse {
 }
 
 message GetLocationScenesRequest {

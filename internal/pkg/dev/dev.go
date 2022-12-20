@@ -127,14 +127,14 @@ func (s DevServer) GetLocationScenes(
 	if err != nil {
 		return nil, err
 	}
-	res := getScenes(modelScenes)
+	res := getScenesFromModels(modelScenes)
 
 	return &devv1.GetLocationScenesResponse{
 		Scene: res,
 	}, nil
 }
 
-func getScenes(modelScenes []model.Scenes) []*devv1.Scene {
+func getScenesFromModels(modelScenes []model.Scenes) []*devv1.Scene {
 	var scenes []*devv1.Scene
 	for _, v := range modelScenes {
 		scene := devv1.Scene{

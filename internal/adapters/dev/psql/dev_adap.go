@@ -163,6 +163,15 @@ func (r DevPSQLRepository) CreateScene(
 	return result, nil
 }
 
+func (r DevPSQLRepository) DeleteScene(
+	ctx context.Context,
+	projectName string,
+	locationName string,
+	reqUserID string,
+) (model.Scenes, error) {
+	return model.Scenes{}, nil
+}
+
 func (r DevPSQLRepository) GetLocationScenes(
 	ctx context.Context,
 	projectName string,

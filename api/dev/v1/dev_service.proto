@@ -19,6 +19,7 @@ service DevService {
     // Scene is the basic unit of the developed game
     // Containing player options and possibly encounters
     rpc NewScene (NewSceneRequest) returns (NewSceneResponse);
+    rpc DeleteScene (DeleteSceneRequest) returns (DeleteSceneResponse);
 
     // Returns all scenes linked to a certain location
     rpc GetLocationScenes (GetLocationScenesRequest) returns (GetLocationScenesResponse);
