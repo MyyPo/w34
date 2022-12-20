@@ -286,3 +286,35 @@ func (r DevPSQLRepository) getLocationID(
 
 	return lookupResult, err
 }
+
+func (r DevPSQLRepository) GetProjectLocations(
+	ctx context.Context,
+	projectName string,
+	reqUserID string,
+) ([]model.Locations, error) {
+	intReqUserID, err := strconv.ParseInt(reqUserID, 10, 32)
+	if err != nil {
+		return []model.Locations{}, err
+	}
+
+	stmt := j.SELECT(
+		t.Locations.ID,
+		t.Locations.Name,
+	).FROM(
+		t.Locations.
+			INNER_JOIN(
+				t.Projects, t.Projects.Name.EQ(j.String(projectName)).
+					AND(
+						t.Projects.OwnerID.EQ(j.Int(intReqUserID)),
+					),
+			),
+	)
+
+	var result []model.Locations
+	err = stmt.Query(r.db, &result)
+	if err != nil || len(result) == 0 {
+		return []model.Locations{}, fmt.Errorf("invalid request")
+	}
+
+	return result, nil
+}

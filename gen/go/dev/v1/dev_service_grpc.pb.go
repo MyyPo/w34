@@ -35,6 +35,8 @@ type DevServiceClient interface {
 	DeleteScene(ctx context.Context, in *DeleteSceneRequest, opts ...grpc.CallOption) (*DeleteSceneResponse, error)
 	// Returns all scenes linked to a certain location
 	GetLocationScenes(ctx context.Context, in *GetLocationScenesRequest, opts ...grpc.CallOption) (*GetLocationScenesResponse, error)
+	// Returns all locations associated with the project
+	GetProject(ctx context.Context, in *GetProjectRequest, opts ...grpc.CallOption) (*GetProjectResponse, error)
 }
 
 type devServiceClient struct {
@@ -99,6 +101,15 @@ func (c *devServiceClient) GetLocationScenes(ctx context.Context, in *GetLocatio
 	return out, nil
 }
 
+func (c *devServiceClient) GetProject(ctx context.Context, in *GetProjectRequest, opts ...grpc.CallOption) (*GetProjectResponse, error) {
+	out := new(GetProjectResponse)
+	err := c.cc.Invoke(ctx, "/dev.v1.DevService/GetProject", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DevServiceServer is the server API for DevService service.
 // All implementations must embed UnimplementedDevServiceServer
 // for forward compatibility
@@ -116,6 +127,8 @@ type DevServiceServer interface {
 	DeleteScene(context.Context, *DeleteSceneRequest) (*DeleteSceneResponse, error)
 	// Returns all scenes linked to a certain location
 	GetLocationScenes(context.Context, *GetLocationScenesRequest) (*GetLocationScenesResponse, error)
+	// Returns all locations associated with the project
+	GetProject(context.Context, *GetProjectRequest) (*GetProjectResponse, error)
 	mustEmbedUnimplementedDevServiceServer()
 }
 
@@ -140,6 +153,9 @@ func (UnimplementedDevServiceServer) DeleteScene(context.Context, *DeleteSceneRe
 }
 func (UnimplementedDevServiceServer) GetLocationScenes(context.Context, *GetLocationScenesRequest) (*GetLocationScenesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLocationScenes not implemented")
+}
+func (UnimplementedDevServiceServer) GetProject(context.Context, *GetProjectRequest) (*GetProjectResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetProject not implemented")
 }
 func (UnimplementedDevServiceServer) mustEmbedUnimplementedDevServiceServer() {}
 
@@ -262,6 +278,24 @@ func _DevService_GetLocationScenes_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DevService_GetProject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetProjectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DevServiceServer).GetProject(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.v1.DevService/GetProject",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DevServiceServer).GetProject(ctx, req.(*GetProjectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DevService_ServiceDesc is the grpc.ServiceDesc for DevService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -292,6 +326,10 @@ var DevService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetLocationScenes",
 			Handler:    _DevService_GetLocationScenes_Handler,
+		},
+		{
+			MethodName: "GetProject",
+			Handler:    _DevService_GetProject_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

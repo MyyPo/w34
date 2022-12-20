@@ -23,5 +23,8 @@ service DevService {
 
     // Returns all scenes linked to a certain location
     rpc GetLocationScenes (GetLocationScenesRequest) returns (GetLocationScenesResponse);
+
+    // Returns all locations associated with the project
+    rpc GetProject (GetProjectRequest) returns (GetProjectResponse);
 }
 

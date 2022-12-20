@@ -104,6 +104,28 @@ func TestDevAdapter(t *testing.T) {
 
 	})
 
+	t.Run("Get project's locations", func(t *testing.T) {
+		_, err := psqlRepo.GetProjectLocations(context.Background(), projectName, ownerID)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+
+	})
+	t.Run("Try to get project's locations with invalid project name", func(t *testing.T) {
+		_, err := psqlRepo.GetProjectLocations(context.Background(), "wrong", ownerID)
+		if err == nil {
+			t.Errorf("expected to raise error passing invalid project name: %v", err)
+		}
+
+	})
+	t.Run("Try to get project's locations with invalid owner id", func(t *testing.T) {
+		_, err := psqlRepo.GetProjectLocations(context.Background(), projectName, "1337")
+		if err == nil {
+			t.Errorf("expected to raise error passing invalid owner id: %v", err)
+		}
+
+	})
+
 	t.Run("Delete a scene", func(t *testing.T) {
 		err := psqlRepo.DeleteScene(context.Background(), projectName, locationName, ownerID, sceneID)
 		if err != nil {
