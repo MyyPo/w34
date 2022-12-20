@@ -64,6 +64,16 @@ func TestDevAdapter(t *testing.T) {
 		}
 		t.Logf("got json: %v", got.Options)
 	})
+	t.Run("Create another scene", func(t *testing.T) {
+		got, err := psqlRepo.CreateScene(context.Background(), projectName, locationName, ownerID, map[string]string{
+			"1": "ADD 15",
+			"2": "NEXT 66",
+		})
+		if err != nil {
+			t.Errorf("failed to create a valid scene: %v", err)
+		}
+		t.Logf("got json: %v", got.Options)
+	})
 
 	t.Run("Get all scenes in created location", func(t *testing.T) {
 		got, err := psqlRepo.GetLocationScenes(context.Background(), projectName, locationName, ownerID)
@@ -72,6 +82,7 @@ func TestDevAdapter(t *testing.T) {
 		}
 
 		t.Logf("got locs: %v", got)
+
 	})
 
 	t.Cleanup(func() { removeRows(psqlDB, projectID) })

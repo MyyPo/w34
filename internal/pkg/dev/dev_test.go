@@ -107,7 +107,16 @@ func TestDevServer(t *testing.T) {
 		}
 	})
 	t.Run("Get all location scenes", func(t *testing.T) {
+		req := &devv1.GetLocationScenesRequest{
+			Project:  projectName,
+			Location: locationName,
+		}
 
+		res, err := devServer.GetLocationScenes(ctx, req)
+		if err != nil {
+			t.Errorf("unexpected error retrieveing loc scenes: %v", err)
+		}
+		t.Logf("acquired list of scenes %v", res)
 	})
 
 	t.Run("Delete the created project", func(t *testing.T) {

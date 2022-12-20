@@ -42,11 +42,8 @@ message GetLocationScenesRequest {
 }
 
 message GetLocationScenesResponse {
-    repeated Scene scenes = 1; 
+    repeated Scene scene = 1; 
 }
-message Scene {    
-    map<int32, Options> options_list = 1;
-}
-message Options {
-    map<string, string> options = 1;
+message Scene {
+    string options = 1;
 }

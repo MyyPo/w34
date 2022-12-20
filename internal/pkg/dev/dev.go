@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	devv1 "github.com/MyyPo/w34.Go/gen/go/dev/v1"
+	"github.com/MyyPo/w34.Go/gen/psql/main/public/model"
 	validator "github.com/MyyPo/w34.Go/internal/pkg/dev/validator"
 	"google.golang.org/grpc/metadata"
 )
@@ -108,6 +109,40 @@ func (s DevServer) CreateScene(
 	return &devv1.NewSceneResponse{
 		SceneId: res.ID,
 	}, nil
+}
+
+func (s DevServer) GetLocationScenes(
+	ctx context.Context,
+	req *devv1.GetLocationScenesRequest,
+) (*devv1.GetLocationScenesResponse, error) {
+	reqUserID, err := getUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	projectName := req.GetProject()
+	locationName := req.GetLocation()
+
+	modelScenes, err := s.repo.GetLocationScenes(ctx, projectName, locationName, reqUserID)
+	if err != nil {
+		return nil, err
+	}
+	res := getScenes(modelScenes)
+
+	return &devv1.GetLocationScenesResponse{
+		Scene: res,
+	}, nil
+}
+
+func getScenes(modelScenes []model.Scenes) []*devv1.Scene {
+	var scenes []*devv1.Scene
+	for _, v := range modelScenes {
+		scene := devv1.Scene{
+			Options: v.Options,
+		}
+		scenes = append(scenes, &scene)
+	}
+	return scenes
 }
 
 func getUserID(ctx context.Context) (string, error) {
