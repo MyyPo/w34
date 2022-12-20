@@ -45,8 +45,8 @@ message GetLocationScenesResponse {
     repeated Scene scenes = 1; 
 }
 message Scene {    
-    repeated Options options = 1;
+    map<int32, Options> options_list = 1;
 }
 message Options {
-    map<string, string> list = 1;
+    map<string, string> options = 1;
 }
