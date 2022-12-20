@@ -38,6 +38,7 @@ message NewSceneResponse {
 message DeleteSceneRequest {
     string project = 1;
     string location = 2;
+    int32 scene_id = 3;
 }
 message DeleteSceneResponse {
 }

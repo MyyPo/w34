@@ -134,6 +134,27 @@ func (s DevServer) GetLocationScenes(
 	}, nil
 }
 
+func (s DevServer) DeleteScene(
+	ctx context.Context,
+	req *devv1.DeleteSceneRequest,
+) (*devv1.DeleteSceneResponse, error) {
+	reqUserID, err := getUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	projectName := req.GetProject()
+	locationName := req.GetLocation()
+	sceneID := req.GetSceneId()
+
+	err = s.repo.DeleteScene(ctx, projectName, locationName, reqUserID, sceneID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &devv1.DeleteSceneResponse{}, nil
+}
+
 func getScenesFromModels(modelScenes []model.Scenes) []*devv1.Scene {
 	var scenes []*devv1.Scene
 	for _, v := range modelScenes {

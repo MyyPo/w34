@@ -32,6 +32,7 @@ func TestDevServer(t *testing.T) {
 	strTestUserID := strconv.FormatInt(int64(testUserID), 10)
 	projectName := "integr test"
 	locationName := "Imperial city sewers"
+	var sceneID int32
 
 	md := metadata.MD{
 		"user_id": []string{strTestUserID},
@@ -101,10 +102,11 @@ func TestDevServer(t *testing.T) {
 			},
 		}
 
-		_, err := devServer.CreateScene(ctx, req)
+		res, err := devServer.CreateScene(ctx, req)
 		if err != nil {
 			t.Errorf("unexpected error creating a valid scene: %v", err)
 		}
+		sceneID = res.GetSceneId()
 	})
 	t.Run("Get all location scenes", func(t *testing.T) {
 		req := &devv1.GetLocationScenesRequest{
@@ -117,6 +119,31 @@ func TestDevServer(t *testing.T) {
 			t.Errorf("unexpected error retrieveing loc scenes: %v", err)
 		}
 		t.Logf("acquired list of scenes %v", res)
+	})
+
+	t.Run("Delete a scene", func(t *testing.T) {
+		req := &devv1.DeleteSceneRequest{
+			Project:  projectName,
+			Location: locationName,
+			SceneId:  sceneID,
+		}
+
+		_, err := devServer.DeleteScene(ctx, req)
+		if err != nil {
+			t.Errorf("unexpected error trying to delete a scene: %v", err)
+		}
+	})
+	t.Run("Try to delete a scene with invalid locationName", func(t *testing.T) {
+		req := &devv1.DeleteSceneRequest{
+			Project:  projectName,
+			Location: "wrong",
+			SceneId:  sceneID,
+		}
+
+		_, err := devServer.DeleteScene(ctx, req)
+		if err == nil {
+			t.Errorf("expected to rasie an error passing invalid Location")
+		}
 	})
 
 	t.Run("Delete the created project", func(t *testing.T) {
