@@ -169,7 +169,44 @@ func (r DevPSQLRepository) DeleteScene(
 	locationName string,
 	reqUserID string,
 ) (model.Scenes, error) {
+
+	// stmt := t.Scenes.
+	// DELETE().
+	// WHERE(
+	// 	t.Scenes.ID.EQ()
+	// )
+
 	return model.Scenes{}, nil
+}
+func (r DevPSQLRepository) getSceneOwnerID(
+	ctx context.Context,
+	sceneID int32,
+	projectName string,
+	locationName string,
+) (model.Projects, error) {
+	stmt := j.
+		SELECT(
+			t.Projects.OwnerID,
+		).FROM(
+		t.Projects.
+			INNER_JOIN(
+				t.Locations,
+				t.Locations.Name.EQ(j.String(locationName))).
+			INNER_JOIN(
+				t.Scenes,
+				t.Scenes.ID.EQ(j.Int32(sceneID)),
+			),
+	).WHERE(
+		t.Projects.Name.EQ(j.String(projectName)),
+	)
+
+	var result model.Projects
+	err := stmt.Query(r.db, &result)
+	if err != nil {
+		return model.Projects{}, err
+	}
+
+	return result, nil
 }
 
 func (r DevPSQLRepository) GetLocationScenes(
@@ -213,9 +250,10 @@ func (r DevPSQLRepository) getLocationID(
 		t.Locations.ID,
 	).FROM(
 		t.Locations.
-			INNER_JOIN(t.Projects, t.Projects.Name.EQ(j.String(projectName)).
-				AND(t.Projects.OwnerID.EQ(j.Int(intReqUserID))).
-				AND(t.Locations.Name.EQ(j.String(locationName))),
+			INNER_JOIN(
+				t.Projects, t.Projects.Name.EQ(j.String(projectName)).
+					AND(t.Projects.OwnerID.EQ(j.Int(intReqUserID))).
+					AND(t.Locations.Name.EQ(j.String(locationName))),
 			),
 	)
 	var lookupResult model.Locations

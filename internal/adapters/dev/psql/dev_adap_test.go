@@ -25,6 +25,7 @@ func TestDevAdapter(t *testing.T) {
 	var locationName = "Test location"
 	var projectID int32
 	ownerID := "47"
+	var sceneID int32
 
 	psqlDB, err := sql.Open("postgres",
 		fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
@@ -63,6 +64,8 @@ func TestDevAdapter(t *testing.T) {
 			t.Errorf("failed to create a valid scene: %v", err)
 		}
 		t.Logf("got json: %v", got.Options)
+
+		sceneID = got.ID
 	})
 	t.Run("Create another scene", func(t *testing.T) {
 		got, err := psqlRepo.CreateScene(context.Background(), projectName, locationName, ownerID, map[string]string{
@@ -82,6 +85,22 @@ func TestDevAdapter(t *testing.T) {
 		}
 
 		t.Logf("got locs: %v", got)
+
+	})
+
+	t.Run("Get ownerID of a scene using utility function", func(t *testing.T) {
+		got, err := psqlRepo.getSceneOwnerID(context.Background(), sceneID, projectName, locationName)
+		if err != nil {
+			t.Errorf("failed to acquire scene's ownerID: %v", err)
+		}
+
+		t.Logf("owner id: %v", got)
+	})
+	t.Run("Try to get ownerID passing incorrect projectName", func(t *testing.T) {
+		_, err := psqlRepo.getSceneOwnerID(context.Background(), sceneID, "incorrect", locationName)
+		if err == nil {
+			t.Errorf("didn't raise error for non-existing project")
+		}
 
 	})
 
