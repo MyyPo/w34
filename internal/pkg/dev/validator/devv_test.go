@@ -41,11 +41,12 @@ func testInvalidKeys(t *testing.T) {
 	invalidOptions := []map[string]string{
 		{
 			"-1": "AD 1",
-			"15": "AD 1",
 		},
 		{
 			"TI": "AD 1",
-			"1":  "AD 1",
+		},
+		{
+			"T99999": "AD 1",
 		},
 	}
 
@@ -59,11 +60,11 @@ func testInvalidKeys(t *testing.T) {
 func testValidKeys(t *testing.T) {
 	validOptions := []map[string]string{
 		{
-			"0":    "AD 123",
-			"1":    "AD 9999",
-			"2":    "NE 122",
-			"T409": "NE 1",
-			"I555": "AD 12",
+			"0":     "AD 123",
+			"1":     "AD 9999",
+			"2":     "NE 122",
+			"T4091": "NE 1",
+			"I555":  "AD 12",
 		},
 	}
 
@@ -76,21 +77,13 @@ func testValidKeys(t *testing.T) {
 }
 
 func testInvalidValues(t *testing.T) {
-	invalidOptions := []map[string]string{
-		{
-			"0": "AD 1",
-			"1": "AD1",
-		},
-		{
-			"0": "AD -1",
-			"1": "AD 12",
-		},
+	invalidOptions := []string{
+		"AD 99999", "aD 9", "2", " ",
 	}
 
-	for _, oMap := range invalidOptions {
-		err := devV.ValidateOptions(oMap)
-		if err == nil {
-			t.Errorf("expected error validating invalid options key: %v", oMap)
+	for _, val := range invalidOptions {
+		if devV.optionsValRgx.MatchString(val) {
+			t.Errorf("expected error validating invalid options value: %v", val)
 		}
 	}
 }
