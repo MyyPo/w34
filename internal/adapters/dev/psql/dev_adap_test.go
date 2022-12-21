@@ -78,7 +78,8 @@ func TestDevAdapter(t *testing.T) {
 		t.Logf("got json: %v", got.Options)
 	})
 	t.Run("Try to create a scene with an ingame scene id occupied for this location", func(t *testing.T) {
-		_, err := psqlRepo.CreateScene(context.Background(), projectName, locationName, ownerID, 2, map[string]string{
+		var occupiedID int32 = 2
+		_, err := psqlRepo.CreateScene(context.Background(), projectName, locationName, ownerID, occupiedID, map[string]string{
 			"1": "ADD 15",
 			"2": "NEXT 66",
 		})

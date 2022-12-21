@@ -37,3 +37,13 @@ func (v DevValidator) ValidateName(projectName string) error {
 
 	return nil
 }
+
+func (v DevValidator) ValidateOptions(options map[string]string) error {
+	for key := range options {
+		if key == "-1" {
+			return fmt.Errorf("invalid key: %v", key)
+		}
+	}
+
+	return nil
+}
