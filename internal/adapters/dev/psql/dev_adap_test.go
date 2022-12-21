@@ -5,7 +5,10 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strconv"
 	"testing"
+
+	"github.com/MyyPo/w34.Go/gen/psql/main/public/model"
 
 	t "github.com/MyyPo/w34.Go/gen/psql/main/public/table"
 	j "github.com/go-jet/jet/v2/postgres"
@@ -24,7 +27,6 @@ func TestDevAdapter(t *testing.T) {
 	var projectName = "test"
 	var locationName = "Test location"
 	var projectID int32
-	ownerID := "47"
 	var sceneID int32
 
 	psqlDB, err := sql.Open("postgres",
@@ -32,6 +34,11 @@ func TestDevAdapter(t *testing.T) {
 			host, port, user, password, dbname))
 	if err != nil {
 		log.Fatalf("failed to connect to db for testing: %q", err)
+	}
+
+	ownerID, intTestUserID, err := createTestUser(psqlDB)
+	if err != nil {
+		log.Fatalf("failed to create test user")
 	}
 
 	psqlRepo := NewDevPSQLRepository(psqlDB)
@@ -149,14 +156,48 @@ func TestDevAdapter(t *testing.T) {
 		}
 	})
 
-	t.Cleanup(func() { removeRows(psqlDB, projectID) })
+	t.Cleanup(func() { removeRows(psqlDB, projectID, intTestUserID) })
 }
 
-func removeRows(db *sql.DB, testProjID int32) {
+func removeRows(db *sql.DB, testProjID, testUserID int32) {
 	stmt := t.Projects.
 		DELETE().
 		WHERE(
 			t.Projects.ID.EQ(j.Int32((testProjID))),
 		)
 	stmt.Exec(db)
+
+	stmt = t.Accounts.
+		DELETE().
+		WHERE(
+			t.Accounts.UserID.EQ(j.Int32(testUserID)),
+		)
+	stmt.Exec(db)
+
+}
+
+func createTestUser(db *sql.DB) (string, int32, error) {
+	stmt := t.Accounts.
+		INSERT(
+			t.Accounts.Username,
+			t.Accounts.Email,
+			t.Accounts.Password,
+		).VALUES(
+		"unclaimedname",
+		"unclaimedemail@gmail.com",
+		"greatpassword",
+	).RETURNING(
+		t.Accounts.UserID,
+		t.Accounts.Username,
+	)
+
+	var result model.Accounts
+	err := stmt.Query(db, &result)
+	if err != nil {
+		return "", 0, err
+	}
+
+	strTestUserID := strconv.FormatInt(int64(result.UserID), 10)
+
+	return strTestUserID, result.UserID, nil
 }
