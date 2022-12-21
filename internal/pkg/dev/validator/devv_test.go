@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-var devV, _ = NewDevValidator("", "")
+var devV, _ = NewDevValidator("", "", "")
 
 func TestValidateProjectName(t *testing.T) {
 	t.Parallel()
@@ -28,6 +28,8 @@ func TestValidateOptions(t *testing.T) {
 	for scenario, fn := range map[string]func(t *testing.T){
 		"invalid options key": testInvalidKeys,
 		"valid options keys":  testValidKeys,
+		"invalid values":      testInvalidValues,
+		"valid values":        testValidValues,
 	} {
 		t.Run(scenario, func(t *testing.T) {
 			fn(t)
@@ -38,12 +40,12 @@ func TestValidateOptions(t *testing.T) {
 func testInvalidKeys(t *testing.T) {
 	invalidOptions := []map[string]string{
 		{
-			"-1": "ADD 1",
-			"15": "ADD 1",
+			"-1": "AD 1",
+			"15": "AD 1",
 		},
 		{
-			"TI": "ADD 1",
-			"1":  "ADD 1",
+			"TI": "AD 1",
+			"1":  "AD 1",
 		},
 	}
 
@@ -57,11 +59,49 @@ func testInvalidKeys(t *testing.T) {
 func testValidKeys(t *testing.T) {
 	validOptions := []map[string]string{
 		{
-			"0":    "ADD 1",
-			"1":    "ADD 1",
-			"2":    "ADD 1",
-			"T409": "ADD 1",
-			"I555": "ADD 1",
+			"0":    "AD 123",
+			"1":    "AD 9999",
+			"2":    "NE 122",
+			"T409": "NE 1",
+			"I555": "AD 12",
+		},
+	}
+
+	for _, oMap := range validOptions {
+		err := devV.ValidateOptions(oMap)
+		if err != nil {
+			t.Errorf("got error validating valid keys: %v", err)
+		}
+	}
+}
+
+func testInvalidValues(t *testing.T) {
+	invalidOptions := []map[string]string{
+		{
+			"0": "AD 1",
+			"1": "AD1",
+		},
+		{
+			"0": "AD -1",
+			"1": "AD 12",
+		},
+	}
+
+	for _, oMap := range invalidOptions {
+		err := devV.ValidateOptions(oMap)
+		if err == nil {
+			t.Errorf("expected error validating invalid options key: %v", oMap)
+		}
+	}
+}
+func testValidValues(t *testing.T) {
+	validOptions := []map[string]string{
+		{
+			"0": "AD 123",
+			"1": "AD 9999",
+			"2": "NE 122",
+			"3": "NE 1",
+			"4": "AD 12",
 		},
 	}
 
