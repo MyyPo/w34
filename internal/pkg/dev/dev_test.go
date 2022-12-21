@@ -195,7 +195,7 @@ func setupPsql(t *testing.T) (*DevServer, int32) {
 
 	psqlRepo := dev_psql_adapter.NewDevPSQLRepository(psqlDB)
 
-	devValidator, _ := validator.NewDevValidator("")
+	devValidator, _ := validator.NewDevValidator("", "")
 
 	// remove all affected database rows after the tests
 	t.Cleanup(func() { removeRows(psqlDB, testUser.UserID) })

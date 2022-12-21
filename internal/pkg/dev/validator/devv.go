@@ -3,13 +3,15 @@ package dev_validator
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 )
 
 type DevValidator struct {
-	nameRgx *regexp.Regexp
+	nameRgx    *regexp.Regexp
+	optionsRgx *regexp.Regexp
 }
 
-func NewDevValidator(nameRgxString string) (*DevValidator, error) {
+func NewDevValidator(nameRgxString, optionsRgxString string) (*DevValidator, error) {
 	if nameRgxString == "" {
 		nameRgxString = "^[a-zA-Z0-9 ]+(?:-[a-zA-Z0-9]+)*$"
 	}
@@ -19,8 +21,17 @@ func NewDevValidator(nameRgxString string) (*DevValidator, error) {
 		return nil, err
 	}
 
+	if optionsRgxString == "" {
+		optionsRgxString = "[TI]([1-9]|[1-9][0-9]|[1-9][0-9][0-9]|[1-9][0-9][0-9][0-9])"
+	}
+	optionsRgx, err := regexp.Compile(optionsRgxString)
+	if err != nil {
+		return nil, err
+	}
+
 	return &DevValidator{
-		nameRgx: nameRgx,
+		nameRgx:    nameRgx,
+		optionsRgx: optionsRgx,
 	}, nil
 }
 
@@ -40,10 +51,21 @@ func (v DevValidator) ValidateName(projectName string) error {
 
 func (v DevValidator) ValidateOptions(options map[string]string) error {
 	for key := range options {
-		if key == "-1" {
+		if !validateInt(key) && !v.optionsRgx.MatchString(key) {
 			return fmt.Errorf("invalid key: %v", key)
 		}
 	}
 
 	return nil
+}
+
+func validateInt(key string) bool {
+	intKey, err := strconv.ParseInt(key, 10, 32)
+	if err != nil {
+		return false
+	}
+	if intKey >= 100 || intKey < 0 {
+		return false
+	}
+	return true
 }
