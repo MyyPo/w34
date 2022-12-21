@@ -33,7 +33,7 @@ func NewDevValidator(nameRgxString, optionsKeyRgxString, optionsValRgxString str
 
 	if optionsValRgxString == "" {
 		// Prevents users from passing invalid commands to scene options
-		optionsValRgxString = "^(AD|NE) ([1-9]|[1-9][0-9]|[1-9][0-9][0-9]|[1-9][0-9][0-9][0-9])$"
+		optionsValRgxString = "^((AD|NE) ([1-9]|[1-9][0-9]|[1-9][0-9][0-9]|[1-9][0-9][0-9][0-9]) )+.$"
 	}
 	optionsValRgx, err := regexp.Compile(optionsValRgxString)
 	if err != nil {

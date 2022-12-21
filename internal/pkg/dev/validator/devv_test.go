@@ -40,13 +40,13 @@ func TestValidateOptions(t *testing.T) {
 func testInvalidKeys(t *testing.T) {
 	invalidOptions := []map[string]string{
 		{
-			"-1": "AD 1",
+			"-1": "AD 1 .",
 		},
 		{
-			"TI": "AD 1",
+			"TI": "AD 1 .",
 		},
 		{
-			"T99999": "AD 1",
+			"T99999": "AD 1 .",
 		},
 	}
 
@@ -60,11 +60,11 @@ func testInvalidKeys(t *testing.T) {
 func testValidKeys(t *testing.T) {
 	validOptions := []map[string]string{
 		{
-			"0":     "AD 123",
-			"1":     "AD 9999",
-			"2":     "NE 122",
-			"T4091": "NE 1",
-			"I555":  "AD 12",
+			"0":     "AD 123 .",
+			"1":     "AD 9999 .",
+			"2":     "NE 122 .",
+			"T4091": "NE 1 .",
+			"I555":  "AD 12 .",
 		},
 	}
 
@@ -78,7 +78,7 @@ func testValidKeys(t *testing.T) {
 
 func testInvalidValues(t *testing.T) {
 	invalidOptions := []string{
-		"AD 99999", "aD 9", "2", " ",
+		"AD 99999 .", "aD 9 .", "2", " ",
 	}
 
 	for _, val := range invalidOptions {
@@ -90,11 +90,11 @@ func testInvalidValues(t *testing.T) {
 func testValidValues(t *testing.T) {
 	validOptions := []map[string]string{
 		{
-			"0": "AD 123",
-			"1": "AD 9999",
-			"2": "NE 122",
-			"3": "NE 1",
-			"4": "AD 12",
+			"0": "AD 123 .",
+			"1": "AD 9999 .",
+			"2": "NE 122 .",
+			"3": "NE 1 .",
+			"4": "AD 12 .",
 		},
 	}
 
