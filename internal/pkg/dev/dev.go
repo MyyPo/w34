@@ -103,6 +103,10 @@ func (s DevServer) CreateScene(
 	ingameSceneID := req.GetIngameId()
 	sceneOptions := req.GetOptions()
 
+	if err = s.validator.ValidateOptions(sceneOptions); err != nil {
+		return nil, err
+	}
+
 	res, err := s.repo.CreateScene(ctx, projectName, locationName, reqUserID, ingameSceneID, sceneOptions)
 	if err != nil {
 		return nil, err

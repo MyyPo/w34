@@ -97,8 +97,9 @@ func TestDevServer(t *testing.T) {
 			Location: locationName,
 			IngameId: 1,
 			Options: map[string]string{
-				"A1": "NEXT 3",
-				"A2": "ADD 19",
+				"0":  "NE 3 .",
+				"1":  "AD 19 .",
+				"T2": "AD 19 NE 5 .",
 			},
 		}
 
