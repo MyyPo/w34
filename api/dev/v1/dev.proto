@@ -63,9 +63,10 @@ message GetProjectResponse {
 }
 
 message NewTagRequest {
-    int32 ingame_id = 1;
-    string name = 2;
-    string desc = 3;
+    string project = 1;
+    int32 ingame_id = 2;
+    string name = 3;
+    string desc = 4;
 }
 message NewTagResponse {
 }
