@@ -25,18 +25,21 @@ type DevServiceClient interface {
 	// Used to initiate a new user project
 	NewProject(ctx context.Context, in *NewProjectRequest, opts ...grpc.CallOption) (*NewProjectResponse, error)
 	DeleteProject(ctx context.Context, in *DeleteProjectRequest, opts ...grpc.CallOption) (*DeleteProjectResponse, error)
+	// Returns all locations associated with the project
+	GetProject(ctx context.Context, in *GetProjectRequest, opts ...grpc.CallOption) (*GetProjectResponse, error)
 	// Used to create a location for the specified project
 	// Every game scene has to be linked to a certain location
 	NewLocation(ctx context.Context, in *NewLocationRequest, opts ...grpc.CallOption) (*NewLocationResponse, error)
+	// Returns all scenes linked to a certain location
+	GetLocationScenes(ctx context.Context, in *GetLocationScenesRequest, opts ...grpc.CallOption) (*GetLocationScenesResponse, error)
 	// Create a new scene linked to a certain location
 	// Scene is the basic unit of the developed game
 	// Containing player options and possibly encounters
 	NewScene(ctx context.Context, in *NewSceneRequest, opts ...grpc.CallOption) (*NewSceneResponse, error)
 	DeleteScene(ctx context.Context, in *DeleteSceneRequest, opts ...grpc.CallOption) (*DeleteSceneResponse, error)
-	// Returns all scenes linked to a certain location
-	GetLocationScenes(ctx context.Context, in *GetLocationScenesRequest, opts ...grpc.CallOption) (*GetLocationScenesResponse, error)
-	// Returns all locations associated with the project
-	GetProject(ctx context.Context, in *GetProjectRequest, opts ...grpc.CallOption) (*GetProjectResponse, error)
+	// Create a new tag
+	// It is responsible for modyifying availabe scene options to a player
+	NewTag(ctx context.Context, in *NewTagRequest, opts ...grpc.CallOption) (*NewTagResponse, error)
 }
 
 type devServiceClient struct {
@@ -65,9 +68,27 @@ func (c *devServiceClient) DeleteProject(ctx context.Context, in *DeleteProjectR
 	return out, nil
 }
 
+func (c *devServiceClient) GetProject(ctx context.Context, in *GetProjectRequest, opts ...grpc.CallOption) (*GetProjectResponse, error) {
+	out := new(GetProjectResponse)
+	err := c.cc.Invoke(ctx, "/dev.v1.DevService/GetProject", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *devServiceClient) NewLocation(ctx context.Context, in *NewLocationRequest, opts ...grpc.CallOption) (*NewLocationResponse, error) {
 	out := new(NewLocationResponse)
 	err := c.cc.Invoke(ctx, "/dev.v1.DevService/NewLocation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *devServiceClient) GetLocationScenes(ctx context.Context, in *GetLocationScenesRequest, opts ...grpc.CallOption) (*GetLocationScenesResponse, error) {
+	out := new(GetLocationScenesResponse)
+	err := c.cc.Invoke(ctx, "/dev.v1.DevService/GetLocationScenes", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -92,18 +113,9 @@ func (c *devServiceClient) DeleteScene(ctx context.Context, in *DeleteSceneReque
 	return out, nil
 }
 
-func (c *devServiceClient) GetLocationScenes(ctx context.Context, in *GetLocationScenesRequest, opts ...grpc.CallOption) (*GetLocationScenesResponse, error) {
-	out := new(GetLocationScenesResponse)
-	err := c.cc.Invoke(ctx, "/dev.v1.DevService/GetLocationScenes", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *devServiceClient) GetProject(ctx context.Context, in *GetProjectRequest, opts ...grpc.CallOption) (*GetProjectResponse, error) {
-	out := new(GetProjectResponse)
-	err := c.cc.Invoke(ctx, "/dev.v1.DevService/GetProject", in, out, opts...)
+func (c *devServiceClient) NewTag(ctx context.Context, in *NewTagRequest, opts ...grpc.CallOption) (*NewTagResponse, error) {
+	out := new(NewTagResponse)
+	err := c.cc.Invoke(ctx, "/dev.v1.DevService/NewTag", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -117,18 +129,21 @@ type DevServiceServer interface {
 	// Used to initiate a new user project
 	NewProject(context.Context, *NewProjectRequest) (*NewProjectResponse, error)
 	DeleteProject(context.Context, *DeleteProjectRequest) (*DeleteProjectResponse, error)
+	// Returns all locations associated with the project
+	GetProject(context.Context, *GetProjectRequest) (*GetProjectResponse, error)
 	// Used to create a location for the specified project
 	// Every game scene has to be linked to a certain location
 	NewLocation(context.Context, *NewLocationRequest) (*NewLocationResponse, error)
+	// Returns all scenes linked to a certain location
+	GetLocationScenes(context.Context, *GetLocationScenesRequest) (*GetLocationScenesResponse, error)
 	// Create a new scene linked to a certain location
 	// Scene is the basic unit of the developed game
 	// Containing player options and possibly encounters
 	NewScene(context.Context, *NewSceneRequest) (*NewSceneResponse, error)
 	DeleteScene(context.Context, *DeleteSceneRequest) (*DeleteSceneResponse, error)
-	// Returns all scenes linked to a certain location
-	GetLocationScenes(context.Context, *GetLocationScenesRequest) (*GetLocationScenesResponse, error)
-	// Returns all locations associated with the project
-	GetProject(context.Context, *GetProjectRequest) (*GetProjectResponse, error)
+	// Create a new tag
+	// It is responsible for modyifying availabe scene options to a player
+	NewTag(context.Context, *NewTagRequest) (*NewTagResponse, error)
 	mustEmbedUnimplementedDevServiceServer()
 }
 
@@ -142,8 +157,14 @@ func (UnimplementedDevServiceServer) NewProject(context.Context, *NewProjectRequ
 func (UnimplementedDevServiceServer) DeleteProject(context.Context, *DeleteProjectRequest) (*DeleteProjectResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteProject not implemented")
 }
+func (UnimplementedDevServiceServer) GetProject(context.Context, *GetProjectRequest) (*GetProjectResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetProject not implemented")
+}
 func (UnimplementedDevServiceServer) NewLocation(context.Context, *NewLocationRequest) (*NewLocationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NewLocation not implemented")
+}
+func (UnimplementedDevServiceServer) GetLocationScenes(context.Context, *GetLocationScenesRequest) (*GetLocationScenesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLocationScenes not implemented")
 }
 func (UnimplementedDevServiceServer) NewScene(context.Context, *NewSceneRequest) (*NewSceneResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NewScene not implemented")
@@ -151,11 +172,8 @@ func (UnimplementedDevServiceServer) NewScene(context.Context, *NewSceneRequest)
 func (UnimplementedDevServiceServer) DeleteScene(context.Context, *DeleteSceneRequest) (*DeleteSceneResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteScene not implemented")
 }
-func (UnimplementedDevServiceServer) GetLocationScenes(context.Context, *GetLocationScenesRequest) (*GetLocationScenesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetLocationScenes not implemented")
-}
-func (UnimplementedDevServiceServer) GetProject(context.Context, *GetProjectRequest) (*GetProjectResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetProject not implemented")
+func (UnimplementedDevServiceServer) NewTag(context.Context, *NewTagRequest) (*NewTagResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NewTag not implemented")
 }
 func (UnimplementedDevServiceServer) mustEmbedUnimplementedDevServiceServer() {}
 
@@ -206,6 +224,24 @@ func _DevService_DeleteProject_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DevService_GetProject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetProjectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DevServiceServer).GetProject(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.v1.DevService/GetProject",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DevServiceServer).GetProject(ctx, req.(*GetProjectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _DevService_NewLocation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(NewLocationRequest)
 	if err := dec(in); err != nil {
@@ -220,6 +256,24 @@ func _DevService_NewLocation_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DevServiceServer).NewLocation(ctx, req.(*NewLocationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DevService_GetLocationScenes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLocationScenesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DevServiceServer).GetLocationScenes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dev.v1.DevService/GetLocationScenes",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DevServiceServer).GetLocationScenes(ctx, req.(*GetLocationScenesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -260,38 +314,20 @@ func _DevService_DeleteScene_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DevService_GetLocationScenes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetLocationScenesRequest)
+func _DevService_NewTag_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NewTagRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DevServiceServer).GetLocationScenes(ctx, in)
+		return srv.(DevServiceServer).NewTag(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/dev.v1.DevService/GetLocationScenes",
+		FullMethod: "/dev.v1.DevService/NewTag",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DevServiceServer).GetLocationScenes(ctx, req.(*GetLocationScenesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _DevService_GetProject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetProjectRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(DevServiceServer).GetProject(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/dev.v1.DevService/GetProject",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DevServiceServer).GetProject(ctx, req.(*GetProjectRequest))
+		return srv.(DevServiceServer).NewTag(ctx, req.(*NewTagRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -312,8 +348,16 @@ var DevService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _DevService_DeleteProject_Handler,
 		},
 		{
+			MethodName: "GetProject",
+			Handler:    _DevService_GetProject_Handler,
+		},
+		{
 			MethodName: "NewLocation",
 			Handler:    _DevService_NewLocation_Handler,
+		},
+		{
+			MethodName: "GetLocationScenes",
+			Handler:    _DevService_GetLocationScenes_Handler,
 		},
 		{
 			MethodName: "NewScene",
@@ -324,12 +368,8 @@ var DevService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _DevService_DeleteScene_Handler,
 		},
 		{
-			MethodName: "GetLocationScenes",
-			Handler:    _DevService_GetLocationScenes_Handler,
-		},
-		{
-			MethodName: "GetProject",
-			Handler:    _DevService_GetProject_Handler,
+			MethodName: "NewTag",
+			Handler:    _DevService_NewTag_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
