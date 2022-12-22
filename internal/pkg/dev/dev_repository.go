@@ -50,4 +50,12 @@ type Repository interface {
 		projectName string,
 		reqUserID string,
 	) ([]model.Locations, error)
+	CreateTag(
+		ctx context.Context,
+		projectName string,
+		reqUserID string,
+		tagID int32,
+		tagName string,
+		tagDesc string,
+	) (model.Tags, error)
 }

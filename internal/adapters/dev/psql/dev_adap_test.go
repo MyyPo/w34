@@ -142,6 +142,16 @@ func TestDevAdapter(t *testing.T) {
 
 	})
 
+	t.Run("Create a new tag", func(t *testing.T) {
+		tagName := "slayed_dragon"
+		tagDesc := "killed the tower's dragon"
+		res, err := psqlRepo.CreateTag(context.Background(), projectName, ownerID, 1, tagName, tagDesc)
+		if err != nil {
+			t.Errorf("unexpected error creating a new tag: %v", err)
+		}
+
+		t.Logf("created tag: %v", res)
+	})
 	t.Run("Delete a scene", func(t *testing.T) {
 		err := psqlRepo.DeleteScene(context.Background(), projectName, locationName, ownerID, sceneID)
 		if err != nil {

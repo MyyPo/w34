@@ -325,3 +325,68 @@ func (r DevPSQLRepository) GetProjectLocations(
 
 	return result, nil
 }
+
+func (r DevPSQLRepository) CreateTag(
+	ctx context.Context,
+	projectName string,
+	reqUserID string,
+	tagID int32,
+	tagName string,
+	tagDesc string,
+) (model.Tags, error) {
+	// Get project ID if it is owned by the requesting user
+	projectID, err := r.GetProjectID(ctx, projectName, reqUserID)
+	if err != nil {
+		return model.Tags{}, err
+	}
+
+	stmt := t.Tags.
+		INSERT(
+			t.Tags.IngameID,
+			t.Tags.ProjectID,
+			t.Tags.Name,
+			t.Tags.Desciption,
+		).VALUES(
+		tagID,
+		projectID,
+		tagName,
+		tagDesc,
+	).RETURNING(
+		t.Tags.Name,
+	)
+
+	var result model.Tags
+	err = stmt.Query(r.db, &result)
+	if err != nil {
+		return model.Tags{}, err
+	}
+
+	return result, nil
+}
+
+func (r DevPSQLRepository) GetProjectID(
+	ctx context.Context,
+	projectName string,
+	reqUserID string,
+) (int32, error) {
+	intReqUserID, err := strconv.ParseInt(reqUserID, 10, 32)
+	if err != nil {
+		return 0, err
+	}
+
+	stmt := t.Projects.
+		SELECT(
+			t.Projects.ID,
+		).WHERE(
+		t.Projects.OwnerID.EQ(j.Int64(intReqUserID)).AND(
+			t.Projects.Name.EQ(j.String(projectName)),
+		),
+	)
+	var result model.Projects
+	err = stmt.Query(r.db, &result)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.ID, nil
+}
