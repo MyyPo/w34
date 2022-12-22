@@ -54,12 +54,11 @@ func TestDevAdapter(t *testing.T) {
 	})
 
 	t.Run("Valid create a new location", func(t *testing.T) {
-		got, err := psqlRepo.CreateLocation(context.Background(), projectName, locationName, ownerID)
+		_, err := psqlRepo.CreateLocation(context.Background(), projectName, locationName, ownerID)
 		if err != nil {
 			t.Errorf("unexpected error creating location: %v", err)
 		}
 
-		t.Log(got.ID)
 	})
 
 	t.Run("Create a scene", func(t *testing.T) {
