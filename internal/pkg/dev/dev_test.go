@@ -122,6 +122,38 @@ func TestDevServer(t *testing.T) {
 		t.Logf("acquired list of scenes %v", res)
 	})
 
+	t.Run("Create a tag", func(t *testing.T) {
+		req := &devv1.NewTagRequest{
+			Project:  projectName,
+			IngameId: 1,
+			Name:     "New tag",
+			Desc:     "new test tag",
+		}
+
+		_, err := devServer.CreateTag(ctx, req)
+		if err != nil {
+			t.Errorf("error creating a tag: %v", err)
+		}
+	})
+	t.Run("Try to create a tag with invalid user", func(t *testing.T) {
+		invalidMd := metadata.MD{
+			"user_id": []string{"0"},
+		}
+		invalidCtx := metadata.NewIncomingContext(context.Background(), invalidMd)
+
+		req := &devv1.NewTagRequest{
+			Project:  projectName,
+			IngameId: 2,
+			Name:     "New tag",
+			Desc:     "new test tag",
+		}
+
+		_, err := devServer.CreateTag(invalidCtx, req)
+		if err == nil {
+			t.Errorf("created a tag with wrong user")
+		}
+	})
+
 	t.Run("Delete a scene", func(t *testing.T) {
 		req := &devv1.DeleteSceneRequest{
 			Project:  projectName,

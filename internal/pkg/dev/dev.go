@@ -161,6 +161,28 @@ func (s DevServer) DeleteScene(
 	return &devv1.DeleteSceneResponse{}, nil
 }
 
+func (s DevServer) CreateTag(
+	ctx context.Context,
+	req *devv1.NewTagRequest,
+) (*devv1.NewTagResponse, error) {
+	reqUserID, err := getUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	projectName := req.GetProject()
+	tagID := req.GetIngameId()
+	tagName := req.GetName()
+	tagDesc := req.GetDesc()
+
+	_, err = s.repo.CreateTag(ctx, projectName, reqUserID, tagID, tagName, tagDesc)
+	if err != nil {
+		return nil, err
+	}
+
+	return &devv1.NewTagResponse{}, nil
+}
+
 func getScenesFromModels(modelScenes []model.Scenes) []*devv1.Scene {
 	var scenes []*devv1.Scene
 	for _, v := range modelScenes {

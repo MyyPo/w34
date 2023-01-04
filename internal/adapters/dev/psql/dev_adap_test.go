@@ -144,7 +144,7 @@ func TestDevAdapter(t *testing.T) {
 
 	t.Run("Create a new tag", func(t *testing.T) {
 		tagName := "slayed_dragon"
-		tagDesc := "killed the tower's dragon"
+		tagDesc := "killed the tower dragon"
 		res, err := psqlRepo.CreateTag(context.Background(), projectName, ownerID, 1, tagName, tagDesc)
 		if err != nil {
 			t.Errorf("unexpected error creating a new tag: %v", err)
